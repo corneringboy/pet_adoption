@@ -1,0 +1,6 @@
+from django.urls import path
+from .views import pet_list  # Import the view function
+
+urlpatterns = [
+    path('', pet_list, name='pet_list'),  # Define the URL pattern for the pet list page
+]

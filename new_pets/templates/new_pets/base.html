@@ -1,0 +1,105 @@
+{% load static %}  <!-- ✅ Load static files properly -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Adoption</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Icons (for notifications, favorite, etc.) -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- ✅ Custom CSS -->
+    <link rel="stylesheet" href="{% static 'new_pets/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'new_pets/styles.css' %}"> <!-- ✅ Added -->
+</head>
+<body>
+    <!-- ✅ Fixed Navbar -->
+    <header>
+        <nav class="main-navbar">
+            <div class="logo">
+                <h2>Pet Adoption</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+            </ul>
+            <form action="{% url 'search_results' %}" method="GET" class="search-container">
+                <input type="text" id="search-bar" name="query" placeholder="Search pets...">
+                <button type="submit" id="search-btn">🔍</button>
+            </form>
+            <div class="nav-icons">
+                <div class="icon">
+                    <span class="material-icons">favorite</span>
+                </div>
+                <div class="emoji-container">
+                    <span class="emoji" id="user-emoji">👤</span>
+                    <div class="dropdown-menu">
+                        <a href="#" id="login-trigger">Login</a>
+                        <a href="#" id="signup-trigger">Signup</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ✅ Display Image -->
+    <div class="image-container">
+        <img src="{% static 'new_pets/some_image.png' %}" alt="Image">
+    </div>
+
+    <!-- Buyer/Seller Selection Modal -->
+    <div id="roleModal" class="modal">
+        <div class="modal-content">
+            <h3>Select Your Role</h3>
+            <button class="role-btn" onclick="redirectToLogin('buyer')">Buyer</button>
+            <button class="role-btn" onclick="redirectToLogin('seller')">Seller</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <h3>Find Your Perfect Pet!</h3>
+        <p>Discover adorable pets waiting for a new home. Your next best friend is just a click away.</p>
+        <button class="cta-button">Adopt Now</button>
+    </footer>
+
+    <!-- ✅ JavaScript Files -->
+    <script src="{% static 'new_pets/script.js' %}"></script> <!-- ✅ Added -->
+    <script>
+        document.getElementById("login-trigger").addEventListener("click", function() {
+            openRoleModal("login");
+        });
+
+        document.getElementById("signup-trigger").addEventListener("click", function() {
+            openRoleModal("signup");
+        });
+
+        function openRoleModal(action) {
+            document.getElementById("roleModal").style.display = "flex";
+            window.currentAction = action;
+        }
+
+        function redirectToLogin(role) {
+            const action = window.currentAction;
+            if (action === "login") {
+                window.location.href = `/login/${role}/`;
+            } else if (action === "signup") {
+                window.location.href = `/signup/${role}/`;
+            }
+        }
+    </script>
+</body>
+</html>
+
+

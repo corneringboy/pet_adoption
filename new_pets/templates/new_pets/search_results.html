@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Search Results for "{{ query }}"</h2>
+    {% if results %}
+        <ul>
+            {% for pet in results %}
+                <li>{{ pet.name }} - {{ pet.breed }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No pets found.</p>
+    {% endif %}
+{% endblock %}

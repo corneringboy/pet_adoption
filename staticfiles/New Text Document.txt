@@ -1,0 +1,10 @@
+/* Global Styles */
+body {
+    background: url('https://source.unsplash.com/1600x900/?night,sky') no-repeat center center fixed;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    color: white;
+    margin: 0;
+    padding-top: 80px; /* Prevent overlap with navbar */
+}
+

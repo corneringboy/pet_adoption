@@ -1,0 +1,83 @@
+{% extends 'new_pets/base.html' %}  <!-- ✅ Ensure this is the first line -->
+
+{% block content %}
+<div class="signup-container">
+    <h2>Signup as {{ role|title }}</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <label>Username:</label>
+        <input type="text" name="username" required>
+
+        <label>Full Name:</label>
+        <input type="text" name="full_name" required>
+
+        <label>Email:</label>
+        <input type="email" name="email" required>
+
+        <label>Password:</label>
+        <input type="password" name="password1" required>
+
+        <label>Confirm Password:</label>
+        <input type="password" name="password2" required>
+
+        <label>Select Role:</label>
+        <select name="role" id="role-select" required>
+            <option value="buyer">Buyer</option>
+            <option value="seller">Seller</option>
+        </select>
+
+        <!-- Buyer-Specific Fields -->
+        <div id="buyerFields" style="display:none;">
+            <label>Phone Number:</label>
+            <input type="text" name="phone">
+            
+            <label>Address:</label>
+            <input type="text" name="address">
+        </div>
+
+        <!-- Seller-Specific Fields -->
+        <div id="sellerFields" style="display:none;">
+            <label>Government ID (Upload):</label>
+            <input type="file" name="gov_id">
+            
+            <label>Business License (if applicable):</label>
+            <input type="file" name="license">
+            
+            <label>Store Location:</label>
+            <input type="text" name="store_location">
+        </div>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+</div>
+
+<!-- JavaScript to toggle fields dynamically -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const roleSelect = document.getElementById("role-select");
+        const buyerFields = document.getElementById("buyerFields");
+        const sellerFields = document.getElementById("sellerFields");
+
+        function toggleFields() {
+            if (roleSelect.value === "buyer") {
+                buyerFields.style.display = "block";
+                sellerFields.style.display = "none";
+            } else if (roleSelect.value === "seller") {
+                sellerFields.style.display = "block";
+                buyerFields.style.display = "none";
+            } else {
+                buyerFields.style.display = "none";
+                sellerFields.style.display = "none";
+            }
+        }
+
+        roleSelect.addEventListener("change", toggleFields);
+        toggleFields(); // Initial call to set the correct fields on page load
+    });
+</script>
+
+{% endblock %}
+

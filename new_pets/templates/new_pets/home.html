@@ -1,0 +1,209 @@
+{% extends 'new_pets/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #121212;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        text-align: center;
+        padding: 60px 20px;
+        background: url("{% static 'new_pets/hero-bg.jpg' %}") no-repeat center center/cover;
+    }
+    .hero-section h1 {
+        font-size: 2.8em;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 8px black;
+    }
+    .hero-section p {
+        font-size: 1.3em;
+        margin-bottom: 20px;
+    }
+    .hero-section .btn {
+        background-color: #ff9800;
+        padding: 12px 20px;
+        color: black;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 5px;
+    }
+
+    /* Features Section */
+    .features {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 40px;
+        flex-wrap: wrap;
+    }
+    .feature-item {
+        text-align: center;
+        width: 30%;
+        padding: 20px;
+        background: #222;
+        border-radius: 10px;
+    }
+    .feature-item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    .feature-item h2 {
+        color: #ff9800;
+        margin-top: 15px;
+    }
+
+    /* Adoption Benefits Section */
+    .adoption-benefits {
+        text-align: center;
+        padding: 50px;
+        background: #1a1a1a;
+    }
+    .benefits-container {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+    .benefit-item {
+        width: 30%;
+        padding: 20px;
+        background: #222;
+        border-radius: 10px;
+        transition: transform 0.3s ease-in-out;
+    }
+    .benefit-item:hover {
+        transform: scale(1.1);
+    }
+    .benefit-item h3 {
+        color: #ff9800;
+    }
+
+    /* Featured Pets Section */
+    .featured-pets {
+        text-align: center;
+        padding: 40px;
+    }
+    .pet-card {
+        display: inline-block;
+        width: 250px;
+        margin: 15px;
+        background: #222;
+        padding: 15px;
+        border-radius: 10px;
+    }
+    .pet-card img {
+        width: 100%;
+        border-radius: 5px;
+    }
+    .pet-card h3 {
+        margin: 10px 0;
+    }
+    .pet-card a {
+        text-decoration: none;
+        color: #ff9800;
+        font-weight: bold;
+    }
+
+    /* Testimonials Section */
+    .testimonial-section {
+        padding: 50px 20px;
+        text-align: center;
+        background: #1a1a1a;
+        overflow: hidden;
+    }
+    .testimonial-container {
+        display: flex;
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        animation: scrollTestimonials 20s linear infinite;
+    }
+    .testimonial {
+        display: inline-block;
+        width: 300px;
+        margin: 0 20px;
+        padding: 20px;
+        background: #222;
+        border-radius: 10px;
+    }
+    @keyframes scrollTestimonials {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+    }
+
+    /* Stats Section */
+    .stats-section {
+        text-align: center;
+        padding: 40px;
+        background: #181818;
+    }
+    .stats-container {
+        display: flex;
+        justify-content: center;
+        gap: 50px;
+    }
+    .stat-item {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ff9800;
+    }
+
+    /* Footer */
+    footer {
+        background: #181818;
+        padding: 20px;
+        text-align: center;
+        margin-top: 50px;
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <h1>Find Your Perfect Pet</h1>
+    <p>Adopt a pet today and give them a loving home.</p>
+    <a href="{% url 'signup' %}" class="btn">Get Started</a>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="feature-item">
+        <img src="{% static 'new_pets/feature1.jpeg' %}" alt="Wide Variety">
+        <h2>Wide Variety</h2>
+        <p>Browse through different breeds and species.</p>
+    </div>
+    <div class="feature-item">
+        <img src="{% static 'new_pets/feature2.jpeg' %}" alt="Verified Sellers">
+        <h2>Verified Sellers</h2>
+        <p>All pets are listed by trusted sellers.</p>
+    </div>
+    <div class="feature-item">
+        <img src="{% static 'new_pets/feature3.jpeg' %}" alt="Easy Adoption">
+        <h2>Easy Adoption</h2>
+        <p>Connect with pet owners quickly and safely.</p>
+    </div>
+</section>
+
+<!-- Animated Stats Section -->
+<section class="stats-section">
+    <h2>Live Adoption Stats</h2>
+    <div class="stats-container">
+        <div class="stat-item">🐶 Pets Adopted: 120+</div>
+        <div class="stat-item">🏠 Happy Homes Found: 95+</div>
+        <div class="stat-item">🐾 New Listings Every Day!</div>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2025 Pet Adoption. All rights reserved.</p>
+</footer>
+
+{% endblock %}
+
