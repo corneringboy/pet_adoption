@@ -20,41 +20,57 @@ def signup_view(request, role):
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
 
+        # Validate passwords
         if password1 != password2:
             messages.error(request, "Passwords do not match!")
             return redirect(reverse("signup", args=[role]))
 
+        # Check if email already exists
         if CustomUser.objects.filter(email=email).exists():
             messages.error(request, "Email already registered!")
             return redirect(reverse("signup", args=[role]))
 
-        user = CustomUser.objects.create(
-            username=email,
-            email=email,
-            password=make_password(password1),
-            role=role
-        )
+        # Create user
+        try:
+            user = CustomUser.objects.create(
+                username=email,
+                email=email,
+                password=make_password(password1),
+                role=role
+            )
 
-        if role == "buyer":
-            phone = request.POST.get("phone")
-            address = request.POST.get("address")
-            BuyerProfile.objects.create(user=user, phone=phone, address=address)
-        elif role == "seller":
-            gov_id = request.FILES.get("gov_id")
-            license = request.FILES.get("license")
-            store_location = request.POST.get("store_location")
-            SellerProfile.objects.create(user=user, gov_id=gov_id, business_license=license, store_location=store_location)
+            # Create profile based on role
+            if role == "buyer":
+                phone = request.POST.get("phone")
+                address = request.POST.get("address")
+                BuyerProfile.objects.create(user=user, phone=phone, address=address)
+            elif role == "seller":
+                gov_id = request.FILES.get("gov_id")
+                license = request.FILES.get("license")
+                store_location = request.POST.get("store_location")
+                SellerProfile.objects.create(
+                    user=user,
+                    gov_id=gov_id,
+                    business_license=license,
+                    store_location=store_location
+                )
 
-        login(request, user)
-        return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+            # Log the user in and redirect
+            login(request, user)
+            messages.success(request, f"{role.capitalize()} account created successfully!")
+            return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+            return redirect(reverse("signup", args=[role]))
 
     return render(request, "new_pets/signup.html", {"role": role})
 
 # Login View for Buyer & Seller
 def login_view(request, role):
     if request.method == "POST":
-        email = request.POST["email"]
-        password = request.POST["password"]
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
         try:
             user = CustomUser.objects.get(email=email)
@@ -68,6 +84,8 @@ def login_view(request, role):
                 messages.error(request, "Invalid credentials or incorrect role!")
         except CustomUser.DoesNotExist:
             messages.error(request, "User not found!")
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
 
     return render(request, "new_pets/login.html", {"role": role})
 
@@ -85,10 +103,11 @@ def buyer_dashboard(request):
 def seller_dashboard(request):
     return render(request, "new_pets/seller_dashboard.html")
 
-# Logout View (Fixed Redirection)
+# Logout View
 def custom_logout(request):
     logout(request)
-    return redirect("home")  # Redirect to home instead of "login"
+    messages.success(request, "You have been logged out successfully!")
+    return redirect("home")
 
 # About Page
 def about(request):
@@ -109,8 +128,4 @@ def search_results(request):
     query = request.GET.get('query', '')
     results = Pet.objects.filter(name__icontains=query)
     return render(request, "new_pets/search_results.html", {"query": query, "results": results})
-
-
-
-
 
