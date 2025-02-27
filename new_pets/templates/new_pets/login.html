@@ -1,12 +1,19 @@
+{% extends 'new_pets/base.html' %}
+{% load static %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <style>
         body {
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,7 +27,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 350px;
             text-align: center;
         }
 
@@ -59,50 +66,30 @@
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
+            transition: 0.3s;
         }
 
         button:hover {
             background-color: #218838;
         }
 
-        /* Modal Styling */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .links {
+            margin-top: 15px;
         }
 
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            width: 300px;
+        .links a {
+            text-decoration: none;
+            color: #007bff;
         }
 
-        .role-btn {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background-color: #007bff;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
+        .links a:hover {
+            text-decoration: underline;
         }
 
-        .role-btn:hover {
-            background-color: #0056b3;
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
         }
 
     </style>
@@ -111,9 +98,17 @@
 
     <div class="login-container">
         <h2>Login</h2>
-        <form method="POST">
-            {% csrf_token %}
+        
+        <!-- Display error messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <p class="error-message">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
 
+        <form method="POST" action="{% url 'login' role='buyer' %}">  
+            {% csrf_token %}
+            
             <div class="input-group">
                 <input type="text" name="username" placeholder="Username" required>
             </div>
@@ -123,43 +118,36 @@
                 <span id="togglePassword" class="toggle-password">👁️</span>
             </div>
 
-            <button type="button" onclick="openRoleModal()">Login</button>
+            <button type="submit">Login</button>
         </form>
-      <p>Don't have an account? <a href="{% url 'signup' %}">Sign up</a></p>
-    </div>
 
-    <!-- Role Selection Modal -->
-    <div id="roleModal" class="modal">
-        <div class="modal-content">
-            <h2>Select Your Role</h2>
-            <button class="role-btn" onclick="redirectToLogin('buyer')">Login as Buyer</button>
-            <button class="role-btn" onclick="redirectToLogin('seller')">Login as Seller</button>
+        <div class="links">
+            <p><a href="#">Forgot Password?</a></p>
+            <p>Don't have an account? <a href="{% url 'signup' role='buyer' %}">Sign up</a></p>
+            <p><a href="{% url 'home' %}">Back to Home</a></p>
         </div>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         const passwordField = document.getElementById("password");
         const togglePassword = document.getElementById("togglePassword");
-        const modal = document.getElementById("roleModal");
 
+        // Toggle Password Visibility
         togglePassword.addEventListener("click", function () {
             if (passwordField.type === "password") {
                 passwordField.type = "text";
-                togglePassword.textContent = "🙈"; // Hide icon
+                togglePassword.textContent = "👁️‍🗨️"; // Open eye icon
             } else {
                 passwordField.type = "password";
-                togglePassword.textContent = "👁️"; // Show icon
+                togglePassword.textContent = "👁️"; // Closed eye icon
             }
         });
-
-        function openRoleModal() {
-            modal.style.display = "flex";
-        }
-
-        function redirectToLogin(role) {
-            window.location.href = `{% url 'login' %}?role=${role}`;
-        }
     </script>
 
 </body>
 </html>
+{% endblock %}
+

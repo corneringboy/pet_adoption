@@ -1,9 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password
 from .models import CustomUser, BuyerProfile, SellerProfile, Pet
@@ -14,11 +12,11 @@ def home(request):
 
 # About Page
 def about(request):
-    return render(request, "new_pets/about.html")  # Ensure about.html exists
+    return render(request, "new_pets/about.html")
 
 # Contact Page
 def contact(request):
-    return render(request, "new_pets/contact.html")  # Ensure contact.html exists
+    return render(request, "new_pets/contact.html")
 
 # Signup View for Buyer and Seller
 def signup_view(request, role):
@@ -58,30 +56,36 @@ def signup_view(request, role):
 
     return render(request, "new_pets/signup.html", {"role": role})
 
-# Login View for Buyer & Seller
-def login_view(request, role):
+# Login View (Handles both Buyer & Seller)
+def login_view(request, role):  # Accepts 'role' parameter
     if request.method == "POST":
-        email = request.POST["email"]
-        password = request.POST["password"]
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
         try:
             user = CustomUser.objects.get(email=email)
             auth_user = authenticate(request, username=user.username, password=password)
 
-            if auth_user is not None and auth_user.role == role:
-                login(request, auth_user)
-                messages.success(request, f"{role.capitalize()} login successful!")
-                return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+            if auth_user is not None:
+                if auth_user.role == role:  # Ensure role matches
+                    login(request, auth_user)
+                    messages.success(request, "Login successful!")
+
+                    # Redirect user based on role
+                    return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+                else:
+                    messages.error(request, "Invalid role for this login page!")
             else:
-                messages.error(request, "Invalid credentials or incorrect role!")
+                messages.error(request, "Invalid credentials!")
         except CustomUser.DoesNotExist:
             messages.error(request, "User not found!")
 
     return render(request, "new_pets/login.html", {"role": role})
 
-# Seller Login View (Separate Page)
-def seller_login_view(request):
-    return login_view(request, "seller")
+# Logout View
+def custom_logout(request):
+    logout(request)
+    return redirect("home")
 
 # Buyer Dashboard
 @login_required
@@ -93,18 +97,17 @@ def buyer_dashboard(request):
 def seller_dashboard(request):
     return render(request, "new_pets/seller_dashboard.html")
 
-# Logout View (Fixed Redirection)
-def custom_logout(request):
-    logout(request)
-    return redirect("home")
-
 # Pet Listings Page
 def pet_list(request):
-    return render(request, "new_pets/pet_list.html")  # Ensure pet_list.html exists
+    pets = Pet.objects.all()
+    return render(request, "new_pets/pet_list.html", {"pets": pets})
 
-# Search Results (Ensure this exists in urls.py only if it's implemented)
+# Search Results Page
 def search_results(request):
-    return render(request, "new_pets/search_results.html")  # Ensure search_results.html exists
+    query = request.GET.get("q")
+    pets = Pet.objects.filter(name__icontains=query) if query else []
+    return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
+
 
 
 

@@ -105,12 +105,13 @@
         </form>
 
         <p class="text-center mt-3">
-            Already have an account? <a id="login-link" href="#">Login</a>
+            Already have an account? 
+            <a id="login-link" href="{% url 'login' role='buyer' %}">Login</a>
         </p>
     </div>
 </div>
 
-<!-- JavaScript to Toggle Seller Fields & Fix Login URL -->
+<!-- JavaScript to Toggle Seller Fields & Update Login Link -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const roleSelect = document.getElementById("role-select");
@@ -134,3 +135,4 @@
 </script>
 
 {% endblock %}
+
