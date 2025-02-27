@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
@@ -12,7 +11,7 @@ from .models import CustomUser, BuyerProfile, SellerProfile, Pet
 def home(request):
     return render(request, "new_pets/home.html")
 
-# Signup View for Buyer and Seller
+# Updated Signup View
 def signup_view(request, role):
     if request.method == "POST":
         full_name = request.POST.get("full_name")
@@ -30,13 +29,14 @@ def signup_view(request, role):
             messages.error(request, "Email already registered!")
             return redirect(reverse("signup", args=[role]))
 
-        # Create user
         try:
+            # Create CustomUser
             user = CustomUser.objects.create(
                 username=email,
                 email=email,
                 password=make_password(password1),
-                role=role
+                role=role,
+                full_name=full_name
             )
 
             # Create profile based on role
@@ -55,10 +55,17 @@ def signup_view(request, role):
                     store_location=store_location
                 )
 
-            # Log the user in and redirect
-            login(request, user)
-            messages.success(request, f"{role.capitalize()} account created successfully!")
-            return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+            # Authenticate and login
+            auth_user = authenticate(
+                request, 
+                username=email,
+                password=password1
+            )
+            
+            if auth_user:
+                login(request, auth_user)
+                messages.success(request, f"{role.capitalize()} account created successfully!")
+                return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
 
         except Exception as e:
             messages.error(request, f"An error occurred: {str(e)}")
@@ -66,7 +73,7 @@ def signup_view(request, role):
 
     return render(request, "new_pets/signup.html", {"role": role})
 
-# Login View for Buyer & Seller
+# Updated Login View
 def login_view(request, role):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -74,14 +81,21 @@ def login_view(request, role):
 
         try:
             user = CustomUser.objects.get(email=email)
-            auth_user = authenticate(request, username=user.username, password=password)
+            auth_user = authenticate(
+                request, 
+                username=user.username, 
+                password=password
+            )
 
-            if auth_user is not None and auth_user.role == role:
-                login(request, auth_user)
-                messages.success(request, f"{role.capitalize()} login successful!")
-                return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+            if auth_user is not None:
+                if auth_user.role == role:
+                    login(request, auth_user)
+                    messages.success(request, f"{role.capitalize()} login successful!")
+                    return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+                else:
+                    messages.error(request, "Invalid role selection!")
             else:
-                messages.error(request, "Invalid credentials or incorrect role!")
+                messages.error(request, "Invalid credentials!")
         except CustomUser.DoesNotExist:
             messages.error(request, "User not found!")
         except Exception as e:
@@ -96,11 +110,17 @@ def seller_login_view(request):
 # Buyer Dashboard
 @login_required
 def buyer_dashboard(request):
+    if request.user.role != 'buyer':
+        messages.error(request, "Unauthorized access!")
+        return redirect('home')
     return render(request, "new_pets/buyer_dashboard.html")
 
 # Seller Dashboard
 @login_required
 def seller_dashboard(request):
+    if request.user.role != 'seller':
+        messages.error(request, "Unauthorized access!")
+        return redirect('home')
     return render(request, "new_pets/seller_dashboard.html")
 
 # Logout View
@@ -128,4 +148,3 @@ def search_results(request):
     query = request.GET.get('query', '')
     results = Pet.objects.filter(name__icontains=query)
     return render(request, "new_pets/search_results.html", {"query": query, "results": results})
-

@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'new_pets/styles.css' %}"> <!-- ✅ Fixed filename -->
+    <link rel="stylesheet" href="{% static 'new_pets/styles.css' %}">
 </head>
 <body>
     <!-- Navbar -->
@@ -29,18 +29,16 @@
                 <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
             <form action="{% url 'search_results' %}" method="GET" class="search-container">
-                <input type="text" id="search-bar" name="query" placeholder="Search pets...">
+                <input type="text" id="search-bar" name="query" placeholder="Search pets..." autocomplete="off">
                 <button type="submit" id="search-btn">🔍</button>
+                <div id="suggestions" class="suggestions-box"></div>
             </form>
             <div class="nav-icons">
-                <div class="icon">
-                    <span class="material-icons">favorite</span>
-                </div>
                 <div class="emoji-container">
                     <span class="emoji" id="user-emoji">👤</span>
                     <div class="dropdown-menu">
-                        <a href="#" id="login-trigger">Login</a>
-                        <a href="#" id="signup-trigger">Signup</a>
+                        <a href="/login/" id="login-trigger">Login</a>
+                        <a href="/signup/" id="signup-trigger">Signup</a>
                     </div>
                 </div>
             </div>
@@ -56,26 +54,10 @@
     <footer>
         <h3>Find Your Perfect Pet!</h3>
         <p>Discover adorable pets waiting for a new home. Your next best friend is just a click away.</p>
-        <button class="cta-button">Adopt Now</button>
+        <a href="/adopt" class="cta-button">Adopt Now</a>
     </footer>
 
     <!-- JavaScript -->
     <script src="{% static 'new_pets/script.js' %}"></script>
-    <script>
-        // Modal logic
-        document.getElementById("login-trigger").addEventListener("click", () => openRoleModal("login"));
-        document.getElementById("signup-trigger").addEventListener("click", () => openRoleModal("signup"));
-
-        function openRoleModal(action) {
-            document.getElementById("roleModal").style.display = "flex";
-            window.currentAction = action;
-        }
-
-        function redirectToLogin(role) {
-            const action = window.currentAction;
-            const path = action === "login" ? `/login/${role}/` : `/signup/${role}/`;
-            window.location.href = path;
-        }
-    </script>
 </body>
 </html>

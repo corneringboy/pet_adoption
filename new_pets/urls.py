@@ -30,6 +30,9 @@ urlpatterns = [
     # Search and auto-suggestions
     path('get-pet-suggestions/', get_pet_suggestions, name='get_pet_suggestions'),  # Pet suggestions
     path('search-results/', views.search_results, name='search_results'),  # Search results
+
+     path('login/', views.login_view, name='login'),
+    path('signup/', views.signup_view, name='signup'),
 ]
 
 # Serve media files in development
