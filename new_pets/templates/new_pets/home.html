@@ -1,4 +1,4 @@
- {% extends 'new_pets/base.html' %}
+{% extends 'new_pets/base.html' %}
 {% load static %}
 
 {% block content %}
@@ -18,7 +18,7 @@
         text-align: center;
         padding: 100px 20px;
         background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-                    url("{% static 'new_pets/hero-bg.jpg' %}") center/cover;
+                    url("{% static 'new_pets/hero-bg.jpeg' %}") center/cover;
     }
     .hero-section h1 {
         font-size: 3.5rem;
@@ -116,25 +116,30 @@
         margin: 10px 0;
     }
 
-    /* Testimonials Section */
+    /* Testimonials Section (Sliding Effect) */
     .testimonials-section {
         padding: 80px 20px;
         background: #1A1A1A;
+        overflow: hidden;
+        position: relative;
     }
     .testimonials-container {
         display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        padding: 20px 0;
-        -webkit-overflow-scrolling: touch;
+        width: 200%;
+        animation: slide 10s infinite linear;
     }
     .testimonial-card {
-        flex: 0 0 80%;
-        margin-right: 20px;
+        flex: 0 0 50%;
         background: #222;
         padding: 30px;
         border-radius: 15px;
-        scroll-snap-align: start;
+        margin: 0 15px;
+        text-align: center;
+    }
+    @keyframes slide {
+        0% { transform: translateX(0); }
+        50% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
     }
 
     /* Footer */
@@ -159,15 +164,6 @@
         .feature-card {
             flex: 1 1 100%;
         }
-        .testimonials-container {
-            flex-wrap: wrap;
-            overflow-x: visible;
-        }
-        .testimonial-card {
-            flex: 0 0 100%;
-            margin-right: 0;
-            margin-bottom: 20px;
-        }
     }
 </style>
 
@@ -175,24 +171,24 @@
 <section class="hero-section">
     <h1>Find Your Forever Friend</h1>
     <p>Discover loving pets waiting for their perfect home. Join our community of pet lovers today.</p>
-    <a href="{% url 'signup' role='user' %}" class="cta-button">Start Your Journey</a>
+    <a href="{% url 'pet_list' %}" class="cta-button">Start Your Journey</a>
 </section>
 
 <!-- Features Section -->
 <section class="features-section">
     <div class="features-container">
         <div class="feature-card">
-            <img src="{% static 'new_pets/feature1.jpg' %}" alt="Variety" class="feature-icon">
+            <img src="{% static 'new_pets/feature1.jpeg' %}" alt="Diverse Selection" class="feature-icon">
             <h2>Diverse Selection</h2>
             <p>From playful pups to cuddly cats, find your perfect match from our wide variety of pets.</p>
         </div>
         <div class="feature-card">
-            <img src="{% static 'new_pets/feature2.jpg' %}" alt="Verified" class="feature-icon">
+            <img src="{% static 'new_pets/feature2.jpeg' %}" alt="Trusted Partners" class="feature-icon">
             <h2>Trusted Partners</h2>
             <p>All our pets come from verified shelters and responsible breeders.</p>
         </div>
         <div class="feature-card">
-            <img src="{% static 'new_pets/feature3.jpg' %}" alt="Support" class="feature-icon">
+            <img src="{% static 'new_pets/feature3.jpeg' %}" alt="Lifetime Support" class="feature-icon">
             <h2>Lifetime Support</h2>
             <p>Get expert advice and support throughout your pet adoption journey.</p>
         </div>
@@ -217,7 +213,7 @@
     </div>
 </section>
 
-<!-- Testimonials Section -->
+<!-- Testimonials Section (Sliding Effect) -->
 <section class="testimonials-section">
     <div class="testimonials-container">
         <div class="testimonial-card">
@@ -234,10 +230,9 @@
 </section>
 
 <!-- Footer -->
-<footer class="main-footer">
-    <div class="footer-content">
-        <p>&copy; 2024 PetConnect. All rights reserved.</p>
-    </div>
+<footer class="main-footer bg-dark text-center text-white py-4">
+    <p>&copy; 2024 PetConnect. All rights reserved.</p>
 </footer>
 
 {% endblock %}
+

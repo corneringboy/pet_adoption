@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
@@ -11,7 +12,15 @@ from .models import CustomUser, BuyerProfile, SellerProfile, Pet
 def home(request):
     return render(request, "new_pets/home.html")
 
-# Updated Signup View
+# About Page
+def about(request):
+    return render(request, "new_pets/about.html")  # Ensure about.html exists
+
+# Contact Page
+def contact(request):
+    return render(request, "new_pets/contact.html")  # Ensure contact.html exists
+
+# Signup View for Buyer and Seller
 def signup_view(request, role):
     if request.method == "POST":
         full_name = request.POST.get("full_name")
@@ -19,87 +28,54 @@ def signup_view(request, role):
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
 
-        # Validate passwords
         if password1 != password2:
             messages.error(request, "Passwords do not match!")
             return redirect(reverse("signup", args=[role]))
 
-        # Check if email already exists
         if CustomUser.objects.filter(email=email).exists():
             messages.error(request, "Email already registered!")
             return redirect(reverse("signup", args=[role]))
 
-        try:
-            # Create CustomUser
-            user = CustomUser.objects.create(
-                username=email,
-                email=email,
-                password=make_password(password1),
-                role=role,
-                full_name=full_name
-            )
+        user = CustomUser.objects.create(
+            username=email,
+            email=email,
+            password=make_password(password1),
+            role=role
+        )
 
-            # Create profile based on role
-            if role == "buyer":
-                phone = request.POST.get("phone")
-                address = request.POST.get("address")
-                BuyerProfile.objects.create(user=user, phone=phone, address=address)
-            elif role == "seller":
-                gov_id = request.FILES.get("gov_id")
-                license = request.FILES.get("license")
-                store_location = request.POST.get("store_location")
-                SellerProfile.objects.create(
-                    user=user,
-                    gov_id=gov_id,
-                    business_license=license,
-                    store_location=store_location
-                )
+        if role == "buyer":
+            phone = request.POST.get("phone")
+            address = request.POST.get("address")
+            BuyerProfile.objects.create(user=user, phone=phone, address=address)
+        elif role == "seller":
+            gov_id = request.FILES.get("gov_id")
+            license = request.FILES.get("license")
+            store_location = request.POST.get("store_location")
+            SellerProfile.objects.create(user=user, gov_id=gov_id, business_license=license, store_location=store_location)
 
-            # Authenticate and login
-            auth_user = authenticate(
-                request, 
-                username=email,
-                password=password1
-            )
-            
-            if auth_user:
-                login(request, auth_user)
-                messages.success(request, f"{role.capitalize()} account created successfully!")
-                return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
-
-        except Exception as e:
-            messages.error(request, f"An error occurred: {str(e)}")
-            return redirect(reverse("signup", args=[role]))
+        login(request, user)
+        return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
 
     return render(request, "new_pets/signup.html", {"role": role})
 
-# Updated Login View
+# Login View for Buyer & Seller
 def login_view(request, role):
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+        email = request.POST["email"]
+        password = request.POST["password"]
 
         try:
             user = CustomUser.objects.get(email=email)
-            auth_user = authenticate(
-                request, 
-                username=user.username, 
-                password=password
-            )
+            auth_user = authenticate(request, username=user.username, password=password)
 
-            if auth_user is not None:
-                if auth_user.role == role:
-                    login(request, auth_user)
-                    messages.success(request, f"{role.capitalize()} login successful!")
-                    return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
-                else:
-                    messages.error(request, "Invalid role selection!")
+            if auth_user is not None and auth_user.role == role:
+                login(request, auth_user)
+                messages.success(request, f"{role.capitalize()} login successful!")
+                return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
             else:
-                messages.error(request, "Invalid credentials!")
+                messages.error(request, "Invalid credentials or incorrect role!")
         except CustomUser.DoesNotExist:
             messages.error(request, "User not found!")
-        except Exception as e:
-            messages.error(request, f"An error occurred: {str(e)}")
 
     return render(request, "new_pets/login.html", {"role": role})
 
@@ -110,41 +86,27 @@ def seller_login_view(request):
 # Buyer Dashboard
 @login_required
 def buyer_dashboard(request):
-    if request.user.role != 'buyer':
-        messages.error(request, "Unauthorized access!")
-        return redirect('home')
     return render(request, "new_pets/buyer_dashboard.html")
 
 # Seller Dashboard
 @login_required
 def seller_dashboard(request):
-    if request.user.role != 'seller':
-        messages.error(request, "Unauthorized access!")
-        return redirect('home')
     return render(request, "new_pets/seller_dashboard.html")
 
-# Logout View
+# Logout View (Fixed Redirection)
 def custom_logout(request):
     logout(request)
-    messages.success(request, "You have been logged out successfully!")
     return redirect("home")
 
-# About Page
-def about(request):
-    return render(request, "new_pets/about.html")
+# Pet Listings Page
+def pet_list(request):
+    return render(request, "new_pets/pet_list.html")  # Ensure pet_list.html exists
 
-# Contact Page
-def contact(request):
-    return render(request, "new_pets/contact.html")
-
-# Pet Name Auto-Suggestions
-def get_pet_suggestions(request):
-    query = request.GET.get('query', '')
-    suggestions = list(Pet.objects.filter(name__icontains=query).values_list('name', flat=True)[:5])
-    return JsonResponse(suggestions, safe=False)
-
-# Search Results Page
+# Search Results (Ensure this exists in urls.py only if it's implemented)
 def search_results(request):
-    query = request.GET.get('query', '')
-    results = Pet.objects.filter(name__icontains=query)
-    return render(request, "new_pets/search_results.html", {"query": query, "results": results})
+    return render(request, "new_pets/search_results.html")  # Ensure search_results.html exists
+
+
+
+
+

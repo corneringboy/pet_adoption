@@ -1,8 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from . import views
-from .views import get_pet_suggestions, signup_view, login_view, seller_login_view
+from . import views  # Import all views from views.py
 
 urlpatterns = [
     # Home page
@@ -16,27 +15,27 @@ urlpatterns = [
     path('logout/', views.custom_logout, name='logout'),  # Logout functionality
 
     # Role-based signup and login
-    path('signup/<str:role>/', signup_view, name='signup'),  # Signup for buyer/seller
-    path('login/<str:role>/', login_view, name='login'),  # Login for buyer/seller
+    path('signup/<str:role>/', views.signup_view, name='signup'),  # Signup for buyer/seller
+    path('login/<str:role>/', views.login_view, name='login'),  # Login for buyer/seller
 
     # Separate login routes for buyers and sellers
-    path('buyer-login/', login_view, {'role': 'buyer'}, name='buyer_login'),  # Buyer Login
-    path('seller-login/', seller_login_view, name='seller_login'),  # Seller Login
+    path('buyer-login/', views.login_view, {'role': 'buyer'}, name='buyer_login'),  # Buyer Login
+    path('seller-login/', views.seller_login_view, name='seller_login'),  # Seller Login
 
     # Dashboards
     path('buyer-dashboard/', views.buyer_dashboard, name='buyer_dashboard'),  # Buyer Dashboard
     path('seller-dashboard/', views.seller_dashboard, name='seller_dashboard'),  # Seller Dashboard
 
-    # Search and auto-suggestions
-    path('get-pet-suggestions/', get_pet_suggestions, name='get_pet_suggestions'),  # Pet suggestions
-    path('search-results/', views.search_results, name='search_results'),  # Search results
+    # Search results (keep this if the function exists in views.py)
+    path('search-results/', views.search_results, name='search_results'),
 
-     path('login/', views.login_view, name='login'),
-    path('signup/', views.signup_view, name='signup'),
+    # Pets listing page
+    path('pets/', views.pet_list, name='pet_list'),  # Ensure pet_list view is correctly referenced
 ]
 
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 
