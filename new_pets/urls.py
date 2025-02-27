@@ -4,38 +4,37 @@ from django.conf.urls.static import static
 from . import views  # Import all views from views.py
 
 urlpatterns = [
-    # Home page
+    # 🏠 Home Page
     path('', views.home, name='home'),
 
-    # Static pages
+    # 📄 Static Pages
     path('about/', views.about, name='about'),  # About page
     path('contact/', views.contact, name='contact'),  # Contact page
 
-    # Authentication
+    # 🔐 Authentication
     path('logout/', views.custom_logout, name='logout'),  # Logout functionality
 
-    # Role-based signup and login
+    # 🆕 Role-Based Signup & Login
     path('signup/<str:role>/', views.signup_view, name='signup'),  # Signup for buyer/seller
     path('login/<str:role>/', views.login_view, name='login'),  # Login for buyer/seller
 
-    # Separate login routes for buyers and sellers
+    # 🚀 Separate Login Routes for Buyers & Sellers
     path('buyer-login/', views.login_view, {'role': 'buyer'}, name='buyer_login'),  # Buyer Login
     path('seller-login/', views.seller_login_view, name='seller_login'),  # Seller Login
 
-    # Dashboards
+    # 📊 User Dashboards
     path('buyer-dashboard/', views.buyer_dashboard, name='buyer_dashboard'),  # Buyer Dashboard
     path('seller-dashboard/', views.seller_dashboard, name='seller_dashboard'),  # Seller Dashboard
 
-    # Search results (keep this if the function exists in views.py)
-    path('search-results/', views.search_results, name='search_results'),
-
-    # Pets listing page
-    path('pets/', views.pet_list, name='pet_list'),  # Ensure pet_list view is correctly referenced
+    # 🔎 Search & Pets
+    path('search-results/', views.search_results, name='search_results'),  # Search results page
+    path('pets/', views.pet_list, name='pet_list'),  # Pet listing page
 ]
 
-# Serve media files in development
+# 📂 Serve Media Files in Development Mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 
 

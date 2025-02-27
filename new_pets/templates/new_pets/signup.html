@@ -1,83 +1,136 @@
-{% extends 'new_pets/base.html' %}  <!-- ✅ Ensure this is the first line -->
+{% extends 'new_pets/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="signup-container">
-    <h2>Signup as {{ role|title }}</h2>
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        
-        <label>Username:</label>
-        <input type="text" name="username" required>
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h2 class="text-center">Signup</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
-        <label>Full Name:</label>
-        <input type="text" name="full_name" required>
+            <!-- Basic Information -->
+            <div class="mb-3">
+                <label class="form-label">Full Name:</label>
+                <input type="text" name="full_name" class="form-control" required>
+            </div>
 
-        <label>Email:</label>
-        <input type="email" name="email" required>
+            <div class="mb-3">
+                <label class="form-label">Email:</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
 
-        <label>Password:</label>
-        <input type="password" name="password1" required>
+            <div class="mb-3">
+                <label class="form-label">Phone Number:</label>
+                <div class="input-group">
+                    <select id="country-code" class="form-select" name="country_code" required>
+                        <option value="+1">🇺🇸 +1 (USA)</option>
+                        <option value="+44">🇬🇧 +44 (UK)</option>
+                        <option value="+91">🇮🇳 +91 (India)</option>
+                        <option value="+61">🇦🇺 +61 (Australia)</option>
+                        <option value="+81">🇯🇵 +81 (Japan)</option>
+                        <option value="+49">🇩🇪 +49 (Germany)</option>
+                    </select>
+                    <input type="text" name="phone" class="form-control" placeholder="Enter your phone number" required>
+                </div>
+            </div>
 
-        <label>Confirm Password:</label>
-        <input type="password" name="password2" required>
+            <div class="mb-3">
+                <label class="form-label">Password:</label>
+                <input type="password" name="password1" class="form-control" required>
+            </div>
 
-        <label>Select Role:</label>
-        <select name="role" id="role-select" required>
-            <option value="buyer">Buyer</option>
-            <option value="seller">Seller</option>
-        </select>
+            <div class="mb-3">
+                <label class="form-label">Confirm Password:</label>
+                <input type="password" name="password2" class="form-control" required>
+            </div>
 
-        <!-- Buyer-Specific Fields -->
-        <div id="buyerFields" style="display:none;">
-            <label>Phone Number:</label>
-            <input type="text" name="phone">
-            
-            <label>Address:</label>
-            <input type="text" name="address">
-        </div>
+            <!-- Role Selection -->
+            <div class="mb-3">
+                <label class="form-label">Select Role:</label>
+                <select name="role" id="role-select" class="form-select" required>
+                    <option value="buyer">Buyer</option>
+                    <option value="seller">Seller</option>
+                </select>
+            </div>
 
-        <!-- Seller-Specific Fields -->
-        <div id="sellerFields" style="display:none;">
-            <label>Government ID (Upload):</label>
-            <input type="file" name="gov_id">
-            
-            <label>Business License (if applicable):</label>
-            <input type="file" name="license">
-            
-            <label>Store Location:</label>
-            <input type="text" name="store_location">
-        </div>
+            <!-- Seller-Specific Fields (Hidden by Default) -->
+            <div id="sellerFields" style="display:none;">
+                <h4 class="mt-4">Business Details</h4>
 
-        <button type="submit">Sign Up</button>
-    </form>
+                <div class="mb-3">
+                    <label class="form-label">Business/Shop Name:</label>
+                    <input type="text" name="business_name" class="form-control">
+                </div>
 
-    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+                <div class="mb-3">
+                    <label class="form-label">Business Type:</label>
+                    <select name="business_type" class="form-select">
+                        <option value="individual">Individual</option>
+                        <option value="company">Company</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Business Registration Number:</label>
+                    <input type="text" name="registration_number" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">VAT/Tax ID:</label>
+                    <input type="text" name="tax_id" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Business Address:</label>
+                    <input type="text" name="business_address" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Business Description:</label>
+                    <textarea name="business_description" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Government ID (KYC Verification):</label>
+                    <input type="file" name="gov_id" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Business License (Optional):</label>
+                    <input type="file" name="license" class="form-control">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+        </form>
+
+        <p class="text-center mt-3">
+            Already have an account? <a id="login-link" href="#">Login</a>
+        </p>
+    </div>
 </div>
 
-<!-- JavaScript to toggle fields dynamically -->
+<!-- JavaScript to Toggle Seller Fields & Fix Login URL -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const roleSelect = document.getElementById("role-select");
-        const buyerFields = document.getElementById("buyerFields");
         const sellerFields = document.getElementById("sellerFields");
+        const loginLink = document.getElementById("login-link");
 
         function toggleFields() {
-            if (roleSelect.value === "buyer") {
-                buyerFields.style.display = "block";
-                sellerFields.style.display = "none";
-            } else if (roleSelect.value === "seller") {
+            const selectedRole = roleSelect.value;
+            if (selectedRole === "seller") {
                 sellerFields.style.display = "block";
-                buyerFields.style.display = "none";
+                loginLink.href = "{% url 'login' role='seller' %}";
             } else {
-                buyerFields.style.display = "none";
                 sellerFields.style.display = "none";
+                loginLink.href = "{% url 'login' role='buyer' %}";
             }
         }
 
         roleSelect.addEventListener("change", toggleFields);
-        toggleFields(); // Initial call to set the correct fields on page load
+        toggleFields(); // Ensure correct fields are visible on page load
     });
 </script>
 
 {% endblock %}
-

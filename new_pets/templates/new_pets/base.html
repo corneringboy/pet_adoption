@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'new_pets/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'new_pets/style.css' %}">
     
     <style>
         /* Navbar Styles */
@@ -66,24 +66,31 @@
             cursor: pointer;
             font-size: 18px;
         }
+
+        /* White Emoji Dropdown */
         .emoji-container {
             position: relative;
             cursor: pointer;
         }
         .emoji {
-            font-size: 24px;
+            font-size: 32px; /* Bigger for Samsung-style */
+            color: white; /* White emoji */
+            transition: transform 0.3s ease-in-out;
+        }
+        .emoji:hover {
+            transform: scale(1.2);
         }
         .dropdown-menu {
             display: none;
             position: absolute;
             background: #333;
             right: 0;
-            min-width: 120px;
+            min-width: 140px;
             text-align: center;
             border-radius: 5px;
-        }
-        .emoji-container:hover .dropdown-menu {
-            display: block;
+            padding: 10px 0;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
         .dropdown-menu a {
             display: block;
@@ -93,6 +100,11 @@
         }
         .dropdown-menu a:hover {
             background: #FFA726;
+        }
+        .emoji-container:hover .dropdown-menu {
+            display: block;
+            opacity: 1;
+            transform: translateY(5px);
         }
 
         /* Footer */
@@ -135,13 +147,13 @@
                 <button type="submit" id="search-btn">🔍</button>
                 <div id="suggestions" class="suggestions-box"></div>
             </form>
-            <div class="nav-icons">
-                <div class="emoji-container">
-                    <span class="emoji" id="user-emoji">👤</span>
-                    <div class="dropdown-menu">
-                        <a href="/login/" id="login-trigger">Login</a>
-                        <a href="/signup/" id="signup-trigger">Signup</a>
-                    </div>
+            
+            <!-- Samsung-style White Emoji for Login/Signup -->
+            <div class="emoji-container">
+                <span class="emoji" id="user-emoji">👤</span>
+                <div class="dropdown-menu">
+                    <a href="{% url 'login' role='buyer' %}">Login</a>
+                    <a href="{% url 'signup' role='buyer' %}">Signup</a>
                 </div>
             </div>
         </nav>
@@ -163,6 +175,28 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JavaScript -->
-    <script src="{% static 'new_pets/script.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const emojiContainer = document.querySelector(".emoji-container");
+            const dropdownMenu = document.querySelector(".dropdown-menu");
+
+            emojiContainer.addEventListener("mouseover", function() {
+                dropdownMenu.style.display = "block";
+                dropdownMenu.style.opacity = "1";
+                dropdownMenu.style.transform = "translateY(5px)";
+            });
+
+            emojiContainer.addEventListener("mouseleave", function() {
+                setTimeout(() => {
+                    dropdownMenu.style.opacity = "0";
+                    dropdownMenu.style.transform = "translateY(-5px)";
+                    dropdownMenu.style.display = "none";
+                }, 300);
+            });
+        });
+    </script>
 </body>
 </html>
+
+
+
