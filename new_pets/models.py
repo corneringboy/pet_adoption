@@ -17,12 +17,11 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(email, full_name, phone_number, password, **extra_fields)
 
-
 # ✅ Custom User Model
 class CustomUser(AbstractUser):
     username = None  # ❌ Remove default username
     email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=255)  # ✅ Ensure full_name exists
+    full_name = models.CharField(max_length=255)  
     phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
 
     ROLE_CHOICES = [
@@ -52,7 +51,6 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.email
 
-
 # ✅ Buyer Profile
 class BuyerProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -61,7 +59,6 @@ class BuyerProfile(models.Model):
 
     def __str__(self):
         return self.user.email
-
 
 # ✅ Seller Profile
 class SellerProfile(models.Model):
@@ -73,7 +70,6 @@ class SellerProfile(models.Model):
     def __str__(self):
         return self.user.email
 
-
 # ✅ Pet Model
 class Pet(models.Model):
     name = models.CharField(max_length=100)
@@ -83,6 +79,8 @@ class Pet(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
 
 
 

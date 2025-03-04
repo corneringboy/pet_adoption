@@ -76,14 +76,30 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'new_pets' / 'static']  # ✅ Corrected path
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # ✅ Static files for production
 
+AUTHENTICATION_BACKENDS = [
+     'django.contrib.auth.backends.AllowAllUsersModelBackend',
+]
+
 ### ✅ FIXED MEDIA FILES CONFIGURATION ###
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'  # ✅ Corrected path for uploaded files
 
-# Custom user model
+# ✅ Custom user model
 AUTH_USER_MODEL = 'new_pets.CustomUser'  # ✅ Ensure this model exists
 
-# Authentication URLs
+# ✅ Authentication URLs
 LOGIN_URL = 'login'             # ✅ URL name for login page
 LOGIN_REDIRECT_URL = 'home'     # ✅ Added to redirect after login
 LOGOUT_REDIRECT_URL = 'home'    # ✅ Redirect after logout
+
+# ✅ Added Email Backend for Account Confirmation & Password Reset
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # ✅ Prints emails to the console (for testing)
+EMAIL_HOST = 'smtp.gmail.com'  # ✅ Update for real SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'  # ✅ Replace with your email
+EMAIL_HOST_PASSWORD = 'your-email-password'  # ❗ Use environment variables in production
+
+# ✅ Default Auto Field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
