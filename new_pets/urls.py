@@ -1,6 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.views import LoginView
 from .views import (
     home, about, contact, login_view, signup_view, 
     buyer_dashboard, seller_dashboard, custom_logout, 
@@ -19,8 +20,12 @@ urlpatterns = [
     path('logout/', custom_logout, name='logout'),  # Logout functionality
 
     # 🆕 Role-Based Signup & Login
-    path('signup/<str:role>/', signup_view, name='signup'),  # Signup for buyer/seller
+    path('signup/<str:role>/', signup_view, name='signup'),  # Role-based signup: /signup/buyer/ & /signup/seller/
     path('login/<str:role>/', login_view, name='login'),  # Role-based login: /login/buyer/ & /login/seller/
+
+    # ➕ General Signup & Login (if role not specified)
+    path('signup/', signup_view, name='signup'),
+    path('login/', LoginView.as_view(template_name='new_pets/login.html'), name='login'),
 
     # 📊 User Dashboards
     path('buyer-dashboard/', buyer_dashboard, name='buyer_dashboard'),  # Buyer Dashboard
@@ -34,7 +39,6 @@ urlpatterns = [
 # 📂 Serve Media Files in Development Mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 
 
 

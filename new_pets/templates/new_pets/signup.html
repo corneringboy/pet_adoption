@@ -2,13 +2,52 @@
 {% load static %}
 
 {% block content %}
+<!-- Custom Glassmorphism CSS -->
+<style>
+    body {
+        background: #0f0f0f;
+        color: #fff;
+        font-family: 'Poppins', sans-serif;
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        padding: 30px;
+        max-width: 500px;
+        margin: auto;
+        animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    input, select, textarea {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+    }
+    input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .btn-primary {
+        background: linear-gradient(45deg, #0ff, #00f);
+        border: none;
+        transition: 0.3s;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #00f, #0ff);
+    }
+</style>
+
 <div class="container mt-5">
-    <div class="card shadow p-4">
+    <div class="glass-card">
         <h2 class="text-center">Signup</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Basic Information -->
+            <!-- User Info -->
             <div class="mb-3">
                 <label class="form-label">Full Name:</label>
                 <input type="text" name="full_name" class="form-control" required>
@@ -22,7 +61,7 @@
             <div class="mb-3">
                 <label class="form-label">Phone Number:</label>
                 <div class="input-group">
-                    <select id="country-code" class="form-select" name="country_code" required>
+                    <select class="form-select" name="country_code" required>
                         <option value="+1">🇺🇸 +1 (USA)</option>
                         <option value="+44">🇬🇧 +44 (UK)</option>
                         <option value="+91">🇮🇳 +91 (India)</option>
@@ -30,7 +69,7 @@
                         <option value="+81">🇯🇵 +81 (Japan)</option>
                         <option value="+49">🇩🇪 +49 (Germany)</option>
                     </select>
-                    <input type="text" name="phone" class="form-control" placeholder="Enter your phone number" required>
+                    <input type="text" name="phone" class="form-control" placeholder="Enter phone number" required>
                 </div>
             </div>
 
@@ -53,12 +92,12 @@
                 </select>
             </div>
 
-            <!-- Seller-Specific Fields (Hidden by Default) -->
+            <!-- Seller Fields (Hidden by Default) -->
             <div id="sellerFields" style="display:none;">
                 <h4 class="mt-4">Business Details</h4>
 
                 <div class="mb-3">
-                    <label class="form-label">Business/Shop Name:</label>
+                    <label class="form-label">Business Name:</label>
                     <input type="text" name="business_name" class="form-control">
                 </div>
 
@@ -119,8 +158,7 @@
         const loginLink = document.getElementById("login-link");
 
         function toggleFields() {
-            const selectedRole = roleSelect.value;
-            if (selectedRole === "seller") {
+            if (roleSelect.value === "seller") {
                 sellerFields.style.display = "block";
                 loginLink.href = "{% url 'login' role='seller' %}";
             } else {
@@ -130,9 +168,12 @@
         }
 
         roleSelect.addEventListener("change", toggleFields);
-        toggleFields(); // Ensure correct fields are visible on page load
+        toggleFields();
     });
 </script>
 
-{% endblock %}
+{% endblock %} 
+
+
+
 

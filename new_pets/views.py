@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password
 from .models import CustomUser, BuyerProfile, SellerProfile, Pet
+from .forms import CustomUserCreationForm
 
 # Home Page
 def home(request):
@@ -19,45 +20,52 @@ def contact(request):
     return render(request, "new_pets/contact.html")
 
 # Signup View for Buyer and Seller
-def signup_view(request, role):
+def signup_view(request, role=None):
     if request.method == "POST":
-        full_name = request.POST.get("full_name")
-        email = request.POST.get("email")
-        password1 = request.POST.get("password1")
-        password2 = request.POST.get("password2")
+        form = CustomUserCreationForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = form.save(commit=False)  # Don't save to DB yet
 
-        if password1 != password2:
-            messages.error(request, "Passwords do not match!")
-            return redirect(reverse("signup", args=[role]))
+            # Assign role if passed in URL
+            if role:
+                user.role = role
 
-        if CustomUser.objects.filter(email=email).exists():
-            messages.error(request, "Email already registered!")
-            return redirect(reverse("signup", args=[role]))
+            # Save business-related fields
+            user.business_name = form.cleaned_data.get("business_name", "")
+            user.business_type = form.cleaned_data.get("business_type", "")
+            user.is_company = form.cleaned_data.get("is_company", False)
+            user.business_registration_number = form.cleaned_data.get("business_registration_number", "")
+            user.vat_tax_id = form.cleaned_data.get("vat_tax_id", "")
+            user.business_address = form.cleaned_data.get("business_address", "")
+            user.business_description = form.cleaned_data.get("business_description", "")
 
-        user = CustomUser.objects.create(
-            username=email,
-            email=email,
-            password=make_password(password1),
-            role=role
-        )
+            # Handle file uploads
+            user.government_id = request.FILES.get("government_id", None)
+            user.business_license = request.FILES.get("business_license", None)
 
-        if role == "buyer":
-            phone = request.POST.get("phone")
-            address = request.POST.get("address")
-            BuyerProfile.objects.create(user=user, phone=phone, address=address)
-        elif role == "seller":
-            gov_id = request.FILES.get("gov_id")
-            license = request.FILES.get("license")
-            store_location = request.POST.get("store_location")
-            SellerProfile.objects.create(user=user, gov_id=gov_id, business_license=license, store_location=store_location)
+            user.save()  # Save user to database
 
-        login(request, user)
-        return redirect("buyer_dashboard" if role == "buyer" else "seller_dashboard")
+            # Create profile based on role
+            if user.role == "buyer":
+                BuyerProfile.objects.create(user=user, phone=user.phone_number, address=user.business_address)
+            elif user.role == "seller":
+                SellerProfile.objects.create(
+                    user=user, gov_id=user.government_id, business_license=user.business_license, store_location=user.business_address
+                )
 
-    return render(request, "new_pets/signup.html", {"role": role})
+            messages.success(request, "Signup successful! Please log in.")
+            return redirect("login", role=user.role)
+
+        else:
+            print(form.errors)  # Debugging: Print form errors to terminal
+
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, "new_pets/signup.html", {"form": form, "role": role})
 
 # Login View (Handles both Buyer & Seller)
-def login_view(request, role):  # Accepts 'role' parameter
+def login_view(request, role=None):  # Accepts 'role' parameter
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
@@ -107,6 +115,7 @@ def search_results(request):
     query = request.GET.get("q")
     pets = Pet.objects.filter(name__icontains=query) if query else []
     return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
+
 
 
 
