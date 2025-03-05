@@ -18,7 +18,7 @@
             height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Adjusts alignment */
+            align-items: center; /* Centering the login box */
             background: radial-gradient(circle, #0f0f0f 40%, #1a1a1a 100%);
             color: white;
             margin: 0;
@@ -33,10 +33,7 @@
             box-shadow: 0 0 20px rgba(0, 255, 170, 0.4);
             text-align: center;
             width: 380px;
-            position: absolute;
-            top: 60%;  /* Moves login box slightly down */
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: relative; /* Removed absolute positioning */
             border: 2px solid rgba(0, 255, 170, 0.7);
             animation: neonGlow 1.5s infinite alternate;
         }
@@ -139,20 +136,25 @@
         
         <!-- Display error messages -->
         {% if messages %}
-            {% for message in messages %}
-                <p class="error-message">{{ message }}</p>
-            {% endfor %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p class="error-message">{{ message }}</p>
+                {% endfor %}
+            </div>
         {% endif %}
 
-        <form method="POST" action="{% url 'login' role='buyer' %}">  
+        <!-- 🔥 Only keep the second login form functional -->
+        <form method="POST" action="{% url 'login' role=role %}">
             {% csrf_token %}
             
             <div class="input-group">
-                <input type="text" name="username" placeholder="Username or Email" required>
+                <label for="email">Email:</label>
+                <input type="email" name="email" required>
             </div>
 
             <div class="input-group">
-                <input type="password" id="password" name="password" placeholder="Enter password" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
                 <span id="togglePassword" class="toggle-password">👁️</span>
             </div>
 
@@ -161,7 +163,7 @@
 
         <div class="links">
             <p><a href="{% url 'password_reset' %}">Forgot Password?</a></p>
-            <p>Don't have an account? <a href="{% url 'signup' role='buyer' %}">Sign up</a></p>
+            <p>Don't have an account? <a href="{% url 'signup' role=role %}">Sign up</a></p>
             <p><a href="{% url 'home' %}">Back to Home</a></p>
         </div>
     </div>
@@ -170,25 +172,24 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const passwordField = document.getElementById("password");
-        const togglePassword = document.getElementById("togglePassword");
+        document.addEventListener("DOMContentLoaded", function () {
+            const passwordFields = document.querySelectorAll("input[type='password']");
+            const togglePasswordIcons = document.querySelectorAll(".toggle-password");
 
-        // Toggle Password Visibility
-        togglePassword.addEventListener("click", function () {
-            if (passwordField.type === "password") {
-                passwordField.type = "text";
-                togglePassword.textContent = "👁️‍🗨️"; // Open eye icon
-            } else {
-                passwordField.type = "password";
-                togglePassword.textContent = "👁️"; // Closed eye icon
-            }
+            togglePasswordIcons.forEach((icon, index) => {
+                icon.addEventListener("click", function () {
+                    if (passwordFields[index].type === "password") {
+                        passwordFields[index].type = "text";
+                        icon.textContent = "👁️‍🗨️"; // Open eye icon
+                    } else {
+                        passwordFields[index].type = "password";
+                        icon.textContent = "👁️"; // Closed eye icon
+                    }
+                });
+            });
         });
     </script>
 
 </body>
 </html>
 {% endblock %}
-
-
-
-

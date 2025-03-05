@@ -65,7 +65,7 @@ def signup_view(request, role=None):
 
     return render(request, "new_pets/signup.html", {"form": form, "role": role})
 
-# 🔑 Login View (Handles both Buyer & Seller)
+# 🔑 Fixed Login View (Handles both Buyer & Seller)
 def login_view(request, role=None):  
     if request.method == "POST":
         email = request.POST.get("email")
@@ -78,7 +78,7 @@ def login_view(request, role=None):
             return render(request, "new_pets/login.html", {"role": role})
 
         # ✅ Authenticate using email instead of username
-        auth_user = authenticate(request, username=email, password=password)
+        auth_user = authenticate(request, email=email, password=password)  # 🔥 Fixed authentication
 
         if auth_user is not None:
             if role and auth_user.role != role:  
@@ -127,6 +127,7 @@ def search_results(request):
     query = request.GET.get("q")
     pets = Pet.objects.filter(name__icontains=query) if query else []
     return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
+
 
 
 
