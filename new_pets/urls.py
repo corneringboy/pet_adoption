@@ -26,7 +26,7 @@ urlpatterns = [
 
     # ➕ General Signup & Login (if role not specified)
     path('signup/', signup_view, name='signup'),
-    path('login/', LoginView.as_view(template_name='new_pets/login.html'), name='login'),
+    path('login/', login_view, name='login'),  # Updated to use login_view instead of LoginView.as_view()
 
     # 📊 User Dashboards
     path('buyer-dashboard/', buyer_dashboard, name='buyer_dashboard'),  # Buyer Dashboard
@@ -46,9 +46,3 @@ urlpatterns = [
 # 📂 Serve Media Files in Development Mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-
-
-
-

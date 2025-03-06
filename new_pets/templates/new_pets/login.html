@@ -143,8 +143,8 @@
             </div>
         {% endif %}
 
-        <!-- 🔥 Only keep the second login form functional -->
-        <form method="POST" action="{% url 'login' role=role %}">
+        <!-- 🔥 Fixed form action to handle role-based and general login -->
+        <form method="POST" action="{% if role %}{% url 'login' role=role %}{% else %}{% url 'login' %}{% endif %}">
             {% csrf_token %}
             
             <div class="input-group">
@@ -163,7 +163,7 @@
 
         <div class="links">
             <p><a href="{% url 'password_reset' %}">Forgot Password?</a></p>
-            <p>Don't have an account? <a href="{% url 'signup' role=role %}">Sign up</a></p>
+            <p>Don't have an account? <a href="{% if role %}{% url 'signup' role=role %}{% else %}{% url 'signup' %}{% endif %}">Sign up</a></p>
             <p><a href="{% url 'home' %}">Back to Home</a></p>
         </div>
     </div>

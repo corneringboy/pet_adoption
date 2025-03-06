@@ -73,17 +73,12 @@ class SellerProfile(models.Model):
 # ✅ Pet Model
 class Pet(models.Model):
     name = models.CharField(max_length=100)
-    age = models.IntegerField()
     breed = models.CharField(max_length=100)
+    age = models.IntegerField()
+    image = models.ImageField(upload_to='pet_images/', null=True, blank=True)  # ✅ Allows optional image
     description = models.TextField()
+    adoption_status = models.CharField(max_length=20, choices=[('Available', 'Available'), ('Adopted', 'Adopted')], default='Available')
+    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)  # ✅ Allows optional seller
 
     def __str__(self):
-        return f"{self.name}"
-
-
-
-
-
-
-
-
+        return self.name

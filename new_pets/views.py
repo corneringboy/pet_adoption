@@ -24,14 +24,12 @@ def signup_view(request, role=None):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save(commit=False)  # Don't save to DB yet
-            user.set_password(form.cleaned_data.get("password"))  # ✅ Hash password before saving
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data.get("password"))
 
-            # Assign role if passed in URL
             if role:
                 user.role = role
 
-            # Save business-related fields
             user.business_name = form.cleaned_data.get("business_name", "")
             user.business_type = form.cleaned_data.get("business_type", "")
             user.is_company = form.cleaned_data.get("is_company", False)
@@ -40,13 +38,11 @@ def signup_view(request, role=None):
             user.business_address = form.cleaned_data.get("business_address", "")
             user.business_description = form.cleaned_data.get("business_description", "")
 
-            # Handle file uploads
             user.government_id = request.FILES.get("government_id", None)
             user.business_license = request.FILES.get("business_license", None)
 
-            user.save()  # ✅ Save user to database
+            user.save()
 
-            # Create profile based on role
             if user.role == "buyer":
                 BuyerProfile.objects.create(user=user, phone=user.phone_number, address=user.business_address)
             elif user.role == "seller":
@@ -58,43 +54,41 @@ def signup_view(request, role=None):
             return redirect("login", role=user.role)
 
         else:
-            print(form.errors)  # Debugging: Print form errors to terminal
+            print(form.errors)
 
     else:
         form = CustomUserCreationForm()
 
     return render(request, "new_pets/signup.html", {"form": form, "role": role})
 
-# 🔑 Fixed Login View (Handles both Buyer & Seller)
+# 🔑 Login View
 def login_view(request, role=None):  
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
 
         try:
-            user = CustomUser.objects.get(email=email)  # ✅ Find user by email
+            user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
             messages.error(request, "User not found!")
             return render(request, "new_pets/login.html", {"role": role})
 
-        # ✅ Authenticate using email instead of username
-        auth_user = authenticate(request, email=email, password=password)  # 🔥 Fixed authentication
+        auth_user = authenticate(request, email=email, password=password)
 
         if auth_user is not None:
-            if role and auth_user.role != role:  
+            if role and auth_user.role != role:
                 messages.error(request, "Invalid role for this login page!")
-                return redirect("login", role=role)
+                return redirect("login", role=auth_user.role if auth_user.role else "")
 
             login(request, auth_user)
             messages.success(request, "Login successful!")
 
-            # ✅ Redirect based on user role
             if auth_user.role == "buyer":
                 return redirect("buyer_dashboard")
             elif auth_user.role == "seller":
                 return redirect("seller_dashboard")
             else:
-                return redirect("home")  # ✅ Default fallback
+                return redirect("home")
 
         else:
             messages.error(request, "Invalid email or password!")
@@ -120,6 +114,7 @@ def seller_dashboard(request):
 # 🐶 Pet Listings Page
 def pet_list(request):
     pets = Pet.objects.all()
+    print("Pets Loaded:", pets)
     return render(request, "new_pets/pet_list.html", {"pets": pets})
 
 # 🔎 Search Results Page
@@ -127,16 +122,3 @@ def search_results(request):
     query = request.GET.get("q")
     pets = Pet.objects.filter(name__icontains=query) if query else []
     return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
-
-
-
-
-
-
-
-
-
-
-
-
-
