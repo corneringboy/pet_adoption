@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser, Pet  # ✅ Added Pet model
 
 class CustomUserCreationForm(UserCreationForm):
     business_name = forms.CharField(required=False)
@@ -25,3 +25,9 @@ class CustomUserForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ['email', 'phone_number', 'password1', 'password2']  # No 'username'
+
+# ✅ New Pet Form for Adding Pets
+class PetForm(forms.ModelForm):
+    class Meta:
+        model = Pet
+        fields = ["name", "breed", "age", "image", "description", "adoption_status"]

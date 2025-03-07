@@ -1,0 +1,171 @@
+{% extends 'new_pets/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center text-primary fw-bold">🐶 Seller Dashboard: Manage Your Pets 🐾</h2>
+
+    <!-- 📊 Seller Analytics -->
+    <div class="row text-center mb-4">
+        <div class="col-md-4">
+            <div class="p-3 bg-light shadow rounded">
+                <h5 class="fw-bold">Total Pets Listed</h5>
+                <h3 id="totalPets" class="text-info">0</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light shadow rounded">
+                <h5 class="fw-bold">Total Interests</h5>
+                <h3 id="totalInterests" class="text-danger">0</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light shadow rounded">
+                <h5 class="fw-bold">Most Popular Pet</h5>
+                <h4 id="popularPet" class="text-success">🐾 Loading...</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✨ Add Pet Form -->
+    <div class="card p-4 shadow-sm bg-white mb-4">
+        <h4 class="text-center text-success fw-bold">Add a New Pet</h4>
+        <form method="POST" enctype="multipart/form-data" id="addPetForm">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    {{ form.name.label_tag }} {{ form.name }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.breed.label_tag }} {{ form.breed }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.age.label_tag }} {{ form.age }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.adoption_status.label_tag }} {{ form.adoption_status }}
+                </div>
+                <div class="col-12">
+                    {{ form.description.label_tag }} {{ form.description }}
+                </div>
+                <div class="col-12">
+                    {{ form.image.label_tag }} {{ form.image }}
+                    <img id="imagePreview" src="#" class="img-thumbnail mt-2 d-none" style="max-width: 200px;">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3 w-100">🐾 Add Pet</button>
+        </form>
+    </div>
+
+    <!-- 🐕 Pets List -->
+    <div class="mt-4">
+        <h4 class="text-primary text-center fw-bold">Your Pets</h4>
+        <div class="row" id="petGrid">
+            {% for pet in pets %}
+            <div class="col-md-4 col-sm-6">
+                <div class="card shadow-sm p-3 mb-4 border-0">
+                    <div class="pet-card">
+                        <img src="{{ pet.image.url }}" class="card-img-top pet-thumbnail rounded" alt="{{ pet.name }}">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-center text-dark fw-bold">{{ pet.name }}</h5>
+                        <p><strong>Breed:</strong> {{ pet.breed }}</p>
+                        <p><strong>Age:</strong> {{ pet.age }} years</p>
+                        <p><strong>Status:</strong> 
+                            {% if pet.adoption_status == "Available" %}
+                                <span class="badge bg-success">Available</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Adopted</span>
+                            {% endif %}
+                        </p>
+                        <p class="interest">
+                            ❤️ <span class="interest-count text-danger">{{ pet.interest_count }}</span> Interested Buyers
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-warning btn-sm edit-btn">✏️ Edit</button>
+                            <button class="btn btn-danger btn-sm delete-btn">🗑️ Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center text-muted">You haven't listed any pets yet. Add one now! 🐾</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- 💡 JavaScript for Interactions -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 🖼️ Image Preview
+        document.querySelector("input[type='file']").addEventListener("change", function (event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const preview = document.getElementById("imagePreview");
+                preview.src = reader.result;
+                preview.classList.remove("d-none");
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        });
+
+        // 📊 Update Analytics
+        function updateAnalytics() {
+            const petCards = document.querySelectorAll(".card");
+            document.getElementById("totalPets").textContent = petCards.length;
+
+            let totalInterests = 0;
+            let mostPopularPet = "";
+            let maxInterest = 0;
+
+            petCards.forEach(card => {
+                const interestCount = parseInt(card.querySelector(".interest-count").textContent);
+                totalInterests += interestCount;
+                if (interestCount > maxInterest) {
+                    maxInterest = interestCount;
+                    mostPopularPet = card.querySelector(".card-title").textContent;
+                }
+            });
+
+            document.getElementById("totalInterests").textContent = totalInterests;
+            document.getElementById("popularPet").textContent = mostPopularPet || "No pets listed yet";
+        }
+
+        // 🔄 Auto-refresh Interest Counter every 60 seconds
+        setInterval(updateAnalytics, 60000);
+
+        updateAnalytics();
+    });
+</script>
+
+<!-- Custom CSS for Better UI -->
+<style>
+    body {
+        font-family: 'Nunito', sans-serif;
+    }
+    .pet-card {
+        overflow: hidden;
+        border-radius: 10px;
+    }
+    .pet-thumbnail {
+        transition: transform 0.3s ease-in-out;
+    }
+    .pet-thumbnail:hover {
+        transform: scale(1.05);
+    }
+    .interest {
+        font-size: 16px;
+        font-weight: bold;
+        color: #FF6B6B;
+    }
+    .card {
+        transition: all 0.3s ease-in-out;
+    }
+    .card:hover {
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .btn {
+        border-radius: 10px;
+    }
+</style>
+
+{% endblock %}

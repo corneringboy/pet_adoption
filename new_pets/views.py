@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password
+from django.views.decorators.csrf import csrf_protect  # ✅ Added CSRF protection
 from .models import CustomUser, BuyerProfile, SellerProfile, Pet
-from .forms import CustomUserCreationForm, CustomUserForm  # ✅ Added CustomUserForm
+from .forms import CustomUserCreationForm, CustomUserForm, PetForm  # ✅ Added PetForm
 
 def home(request):
     return render(request, "new_pets/home.html")
@@ -85,11 +86,12 @@ def simple_signup_view(request):
         form = CustomUserForm()
     return render(request, 'signup.html', {'form': form})
 
-# ✅ Fixed login view (Buyers now go to pet_list.html)
+# ✅ Fixed login view (Buyers go to pet_list.html, Sellers go to add_pet.html)
 def login_view(request, role=None):  
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
+
         try:
             user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
@@ -99,21 +101,19 @@ def login_view(request, role=None):
         auth_user = authenticate(request, email=email, password=password)
 
         if auth_user is not None:
-            if role and auth_user.role != role:
-                messages.error(request, "Invalid role for this login page!")
-                return redirect("login", role=auth_user.role if auth_user.role else "")
-            login(request, auth_user)
+            login(request, auth_user)  # ✅ Log the user in immediately
             messages.success(request, "Login successful!")
 
+            # ✅ Redirect buyers to pet_list.html, sellers to add_pet.html
             if auth_user.role == "buyer":
-                return redirect("pet_list")  # ✅ Ensure it redirects to pet_list.html
+                return redirect("pet_list")
             elif auth_user.role == "seller":
-                return redirect("seller_dashboard")
+                return redirect("add_pet")
             else:
                 return redirect("home")
         else:
             messages.error(request, "Invalid email or password!")
-    
+
     return render(request, "new_pets/login.html", {"role": role})
 
 def custom_logout(request):
@@ -138,3 +138,29 @@ def search_results(request):
     query = request.GET.get("q")
     pets = Pet.objects.filter(name__icontains=query) if query else []
     return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
+
+# ✅ New Add Pet Function (Sellers Add Pets Automatically with CSRF Protection)
+@csrf_protect  # ✅ Added CSRF protection to prevent CSRF errors
+@login_required
+def add_pet(request):
+    if request.user.role != "seller":
+        messages.error(request, "Only sellers can add pets.")
+        return redirect("home")  # ✅ Redirect buyers away
+
+    seller_profile = SellerProfile.objects.get(user=request.user)  # ✅ Get seller details
+
+    if request.method == "POST":
+        form = PetForm(request.POST, request.FILES)
+        if form.is_valid():
+            pet = form.save(commit=False)
+            pet.seller = seller_profile  # ✅ Automatically set the seller
+            pet.save()
+            messages.success(request, "Pet added successfully!")
+            return redirect("add_pet")  # ✅ Reload page to show the new pet
+    else:
+        form = PetForm()
+
+    # ✅ Fetch only pets added by this seller
+    pets = Pet.objects.filter(seller=seller_profile)
+
+    return render(request, "new_pets/add_pet.html", {"form": form, "pets": pets})
