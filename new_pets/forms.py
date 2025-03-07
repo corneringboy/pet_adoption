@@ -20,3 +20,8 @@ class CustomUserCreationForm(UserCreationForm):
                   'vat_tax_id', 'business_address', 'business_description', 
                   'government_id', 'business_license']
 
+# ✅ Added CustomUserForm without removing any existing code
+class CustomUserForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'phone_number', 'password1', 'password2']  # No 'username'

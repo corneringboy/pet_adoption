@@ -33,3 +33,27 @@ admin.site.register(BuyerProfile)
 admin.site.register(SellerProfile)
 admin.site.register(Pet)
 
+# ✅ Additional CustomUserAdmin for better admin control
+class EnhancedCustomUserAdmin(UserAdmin):
+    model = CustomUser
+    list_display = ['email', 'phone_number', 'is_staff', 'is_active']
+    
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal Info', {'fields': ('phone_number',)}),
+        ('Permissions', {'fields': ('is_staff', 'is_active')}),
+    )
+    
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'phone_number', 'password1', 'password2')},
+        ),
+    )
+    
+    search_fields = ('email',)
+    ordering = ('email',)
+
+# ✅ Ensure CustomUserAdmin is properly registered
+admin.site.unregister(CustomUser)
+admin.site.register(CustomUser, EnhancedCustomUserAdmin)
