@@ -65,12 +65,12 @@ class SellerProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gov_id = models.FileField(upload_to="kyc_documents/", blank=True, null=True)
     business_license = models.FileField(upload_to="business_licenses/", blank=True, null=True)
-    store_location = models.CharField(max_length=255, blank=True, null=True)
+    store_location = models.CharField(max_length=255, blank=True, null=True)  # ✅ Address (store location)
 
     def __str__(self):
         return self.user.email
 
-# ✅ Pet Model
+# ✅ Pet Model (FIXED: Now Links to SellerProfile & Gets Store Location)
 class Pet(models.Model):
     name = models.CharField(max_length=100)
     breed = models.CharField(max_length=100)
@@ -78,7 +78,11 @@ class Pet(models.Model):
     image = models.ImageField(upload_to='pet_images/', null=True, blank=True)  # ✅ Allows optional image
     description = models.TextField()
     adoption_status = models.CharField(max_length=20, choices=[('Available', 'Available'), ('Adopted', 'Adopted')], default='Available')
-    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)  # ✅ Allows optional seller
+    seller = models.ForeignKey(SellerProfile, on_delete=models.CASCADE, null=True, blank=True)  # ✅ FIXED: Links to SellerProfile
+
+    def get_store_location(self):
+        """ ✅ Returns the store location of the seller """
+        return self.seller.store_location if self.seller and self.seller.store_location else "No Address Provided"
 
     def __str__(self):
         return self.name

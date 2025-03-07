@@ -117,13 +117,19 @@
                     <button class="btn btn-primary" onclick="toggleDetails('{{ pet.id }}')">View Details</button>
                     <div id="details-{{ pet.id }}" class="details-dropdown" style="display: none;">
                         <p>{{ pet.description }}</p>
+
                         {% if user.is_authenticated %}
                             <button class="btn btn-success" onclick="showSellerDetails('{{ pet.id }}')">Interested</button>
                             <div id="seller-{{ pet.id }}" class="seller-details" style="display: none;">
-                                <p><strong>Seller:</strong> {{ pet.seller.full_name }}</p>
-                                <p><strong>Phone:</strong> {{ pet.seller.phone_number }}</p>
-                                <p><strong>Email:</strong> {{ pet.seller.email }}</p>
-                                <p><strong>Address:</strong> {{ pet.seller.store_location }}</p>
+                                
+                                {% if pet.seller %}
+                                    <p><strong>Seller:</strong> {{ pet.seller.user.full_name }}</p>
+                                    <p><strong>Phone:</strong> {{ pet.seller.user.phone_number }}</p>
+                                    <p><strong>Email:</strong> {{ pet.seller.user.email }}</p>
+                                    <p><strong>Address:</strong> {{ pet.seller.store_location }}</p>
+                                {% else %}
+                                    <p><strong>Seller:</strong> Not Available</p>
+                                {% endif %}
 
                             </div>
                         {% else %}
@@ -131,6 +137,8 @@
                         {% endif %}
                     </div>
                 </div>
+                {% empty %}
+                <p>No pets available.</p>
                 {% endfor %}
             </div>
         </div>
@@ -149,4 +157,3 @@
     }
 </script>
 {% endblock %}
-

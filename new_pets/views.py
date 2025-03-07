@@ -85,6 +85,7 @@ def simple_signup_view(request):
         form = CustomUserForm()
     return render(request, 'signup.html', {'form': form})
 
+# ✅ Fixed login view (Buyers now go to pet_list.html)
 def login_view(request, role=None):  
     if request.method == "POST":
         email = request.POST.get("email")
@@ -105,7 +106,7 @@ def login_view(request, role=None):
             messages.success(request, "Login successful!")
 
             if auth_user.role == "buyer":
-                return redirect("buyer_dashboard")
+                return redirect("pet_list")  # ✅ Ensure it redirects to pet_list.html
             elif auth_user.role == "seller":
                 return redirect("seller_dashboard")
             else:
@@ -122,23 +123,18 @@ def custom_logout(request):
 
 @login_required
 def buyer_dashboard(request):
-    return render(request, "new_pets/buyer_dashboard.html")
+    return redirect("pet_list")  # ✅ Redirect buyer dashboard to pet_list.html
 
 @login_required
 def seller_dashboard(request):
     return render(request, "new_pets/seller_dashboard.html")
 
+# ✅ Ensured pet_list passes pet data correctly
 def pet_list(request):
-    pets = Pet.objects.all()
-    print("Pets Loaded:", pets)
+    pets = Pet.objects.all().select_related("seller")  # ✅ Ensure related seller info is loaded
     return render(request, "new_pets/pet_list.html", {"pets": pets})
 
 def search_results(request):
     query = request.GET.get("q")
     pets = Pet.objects.filter(name__icontains=query) if query else []
     return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
-
-def pet_list(request):
-    pets = Pet.objects.all().select_related("seller")  # Ensure related seller info is loaded
-    return render(request, "new_pets/pet_list.html", {"pets": pets})
-
