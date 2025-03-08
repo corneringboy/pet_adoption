@@ -6,7 +6,7 @@ from django.contrib.auth import views as auth_views  # Added for password reset 
 from .views import (
     home, about, contact, login_view, signup_view, 
     buyer_dashboard, seller_dashboard, custom_logout, 
-    search_results, pet_list, add_pet, edit_pet, delete_pet  # ✅ Added edit_pet & delete_pet
+    search_results, pet_list, add_pet, edit_pet, delete_pet, express_interest  # ✅ Added express_interest
 )
 
 urlpatterns = [
@@ -38,6 +38,9 @@ urlpatterns = [
     path('add-pet/', add_pet, name='add_pet'),  # ✅ Route for adding pets
     path('edit-pet/<int:pet_id>/', edit_pet, name='edit_pet'),  # ✅ Route for editing pets
     path('delete-pet/<int:pet_id>/', delete_pet, name='delete_pet'),  # ✅ Route for deleting pets
+
+    # ✅ Express Interest Route (Buyers Mark Interest in Pets)
+    path("express-interest/<int:pet_id>/", express_interest, name="express_interest"),
 
     # 🔑 Password Reset (Newly Added)
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

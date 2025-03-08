@@ -1,8 +1,92 @@
 {% extends 'new_pets/base.html' %}
 
 {% block content %}
-<div class="page-container">
-    <h1>About Us</h1>
-    <p>Welcome to our pet adoption platform! We connect pet lovers with pets in need of a home.</p>
+
+<!-- 🌟 Page Styling for Classic & Trustworthy Look -->
+<style>
+    body {
+        background-color: #C0C0C0; /* Silver Gray - Slightly Darker */
+        color: #333333; /* Dark Gray for readability */
+    }
+    .custom-container {
+        background-color: #E0E0E0; /* Medium Gray - Darker than background */
+        padding: 50px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2, h3 {
+        color: #0077B6; /* Deep Blue */
+    }
+    .impact-text {
+        color: #0077B6;
+        font-weight: bold;
+    }
+    .btn-primary {
+        background-color: #0077B6; /* Deep Blue */
+        border: none;
+        color: #FFFFFF; /* White text */
+        font-weight: bold;
+    }
+    .btn-primary:hover {
+        background-color: #005a8d; /* Slightly darker blue */
+    }
+    .btn-outline-dark {
+        border-color: #0077B6;
+        color: #0077B6;
+    }
+    .btn-outline-dark:hover {
+        background-color: #0077B6;
+        color: #FFFFFF;
+    }
+</style>
+
+<div class="container mt-5 mb-5 custom-container">
+    <!-- 🔹 About Us Section -->
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">About Us</h1>
+        <h2 class="fw-bold">Connecting Hearts, One Paw at a Time</h2>
+        <p class="fs-5 text-dark">
+            We are more than a platform—we are a movement. Dedicated to uniting loving families with pets in need.
+        </p>
+    </div>
+
+    <!-- 🚀 Our Mission -->
+    <div class="p-4 rounded shadow-sm bg-white">
+        <h3 class="fw-bold">Our Mission</h3>
+        <p class="fs-6 text-dark">
+            We believe every pet deserves a second chance. Our mission is to bridge the gap between shelters and adopters, ensuring pets find the love and care they deserve.
+        </p>
+    </div>
+
+    <!-- 🔥 What Sets Us Apart -->
+    <div class="mt-4 p-4 rounded shadow-sm bg-white">
+        <h3 class="fw-bold">What Makes Us Different?</h3>
+        <ul class="fs-6 text-dark">
+            <li><strong>Verified Shelters:</strong> We partner with trusted rescues to ensure responsible adoptions.</li>
+            <li><strong>24/7 Adoption Support:</strong> Guidance at every step—from inquiry to happy tails.</li>
+            <li><strong>A Global Mission:</strong> Expanding access to pet adoption across cities & borders.</li>
+        </ul>
+    </div>
+
+    <!-- 🔢 Our Impact -->
+    <div class="mt-4 p-4 rounded shadow-sm bg-white">
+        <h3 class="fw-bold">Our Impact</h3>
+        <p class="fs-5 impact-text">1,200+ Happy Tails | 500+ Partnered Organizations | Countless Lives Changed</p>
+    </div>
+
+    <!-- 🚀 Future Innovations -->
+    <div class="mt-4 p-4 rounded shadow-sm bg-white">
+        <h3 class="fw-bold">Innovating for a Better Tomorrow</h3>
+        <p class="fs-6 text-dark">
+            We are pioneering virtual meet-ups to make adoption easier, faster, and more intuitive.
+        </p>
+    </div>
+
+    <!-- 🎯 Call to Action -->
+    <div class="text-center mt-5">
+        <a href="{% url 'pet_list' %}" class="btn btn-primary btn-lg me-3">Find a Pet</a>
+        <a href="{% url 'contact' %}" class="btn btn-outline-dark btn-lg">Partner with Us</a>
+    </div>
 </div>
+
 {% endblock %}

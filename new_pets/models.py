@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth import get_user_model
 
 # ✅ Custom User Manager
 class CustomUserManager(BaseUserManager):
@@ -70,7 +71,7 @@ class SellerProfile(models.Model):
     def __str__(self):
         return self.user.email
 
-# ✅ Pet Model (FIXED: Now Links to SellerProfile & Gets Store Location)
+# ✅ Pet Model (FIXED: Now Links to SellerProfile & Tracks Interested Buyers)
 class Pet(models.Model):
     name = models.CharField(max_length=100)
     breed = models.CharField(max_length=100)
@@ -79,6 +80,7 @@ class Pet(models.Model):
     description = models.TextField()
     adoption_status = models.CharField(max_length=20, choices=[('Available', 'Available'), ('Adopted', 'Adopted')], default='Available')
     seller = models.ForeignKey(SellerProfile, on_delete=models.CASCADE, null=True, blank=True)  # ✅ FIXED: Links to SellerProfile
+    interested_buyers = models.ManyToManyField(CustomUser, blank=True, related_name="interested_pets")  # ✅ Track interested buyers
 
     def get_store_location(self):
         """ ✅ Returns the store location of the seller """

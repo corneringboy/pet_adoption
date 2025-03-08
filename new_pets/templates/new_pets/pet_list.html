@@ -13,7 +13,7 @@
 
     /* Header Styling */
     .header-container {
-        background: linear-gradient(135deg, #4a4a4a, #6c757d); /* Changed from red to gray */
+        background: linear-gradient(135deg, #4a4a4a, #6c757d); /* Gray background */
         color: white;
         text-align: center;
         padding: 20px;
@@ -43,7 +43,7 @@
         background: #ffffff;
     }
 
-    /* Pet List Container (Amazon-style wider layout) */
+    /* Pet List Container */
     .pet-container {
         display: flex;
         flex-direction: column;
@@ -54,7 +54,7 @@
         margin: auto;
     }
 
-    /* Pet Box - Amazon Style */
+    /* Pet Box */
     .pet-box {
         display: flex;
         align-items: center;
@@ -80,7 +80,7 @@
         object-fit: cover;
         border-radius: 10px;
         margin-right: 20px;
-        border: none; /* Removed red border */
+        border: none;
     }
 
     /* Pet Details */
@@ -179,7 +179,7 @@
     <input type="text" class="search-bar" id="searchInput" placeholder="Search for a pet...">
 </div>
 
-<!-- 🐾 Pet List (Amazon-like wider layout) -->
+<!-- 🐾 Pet List -->
 <div class="container">
     <div class="pet-container" id="petGrid">
         {% for pet in pets %}
@@ -198,7 +198,12 @@
 
                 <div class="btn-container">
                     {% if user.is_authenticated %}
-                        <button class="btn btn-success" onclick="showSellerDetails('{{ pet.id }}')">Interested</button>
+                        <form method="POST" action="{% url 'express_interest' pet.id %}" onsubmit="return showSellerDetails('{{ pet.id }}')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Interested</button>
+                        </form>
+
+                        <!-- ✅ Seller Details (Shows after clicking Interested) -->
                         <div id="seller-{{ pet.id }}" class="details-dropdown" style="display: none;">
                             <p><strong>Seller:</strong> {{ pet.seller.user.full_name }}</p>
                             <p><strong>Phone:</strong> 📞 {{ pet.seller.user.phone_number }}</p>
@@ -220,21 +225,23 @@
 <!-- 🛠️ JavaScript -->
 <script>
     function showSellerDetails(petId) {
-        var sellerDiv = document.getElementById("seller-" + petId);
-        sellerDiv.style.display = sellerDiv.style.display === "none" ? "block" : "none";
-    }
-
-    document.getElementById("searchInput").addEventListener("input", function () {
-        let searchValue = this.value.toLowerCase();
-        let petCards = document.querySelectorAll(".pet-box");
-        petCards.forEach(card => {
-            if (card.dataset.name.includes(searchValue) || card.dataset.breed.includes(searchValue)) {
-                card.style.display = "flex";
-            } else {
-                card.style.display = "none";
+        event.preventDefault(); // ✅ Prevents form submission (reload)
+        
+        fetch(event.target.action, {
+            method: "POST",
+            body: new FormData(event.target),
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(response => {
+            if (response.ok) {
+                let sellerDiv = document.getElementById("seller-" + petId);
+                sellerDiv.style.display = "block"; // ✅ Show seller details
             }
-        });
-    });
+        })
+        .catch(error => console.error("Error:", error));
+
+        return false; // ✅ Prevents page refresh
+    }
 </script>
 
 {% endblock %}

@@ -68,11 +68,11 @@
                             <div class="interested-buyers mt-3">
                                 <h6 class="fw-bold">Interested Buyers</h6>
                                 <ul class="list-group">
-                                    {% for interest in pet.interested_buyers.all %}
+                                    {% for buyer in pet.interested_buyers.all %}
                                         <li class="list-group-item">
-                                            <strong>{{ interest.buyer.full_name }}</strong><br>
-                                            📩 {{ interest.buyer.email }}<br>
-                                            📞 {{ interest.buyer.phone_number }}
+                                            <strong>{{ buyer.full_name }}</strong><br>
+                                            📩 {{ buyer.email }}<br>
+                                            📞 {{ buyer.phone_number }}
                                         </li>
                                     {% empty %}
                                         <li class="list-group-item text-muted">No interests yet.</li>
