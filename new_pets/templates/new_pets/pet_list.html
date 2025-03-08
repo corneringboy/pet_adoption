@@ -13,7 +13,7 @@
 
     /* Header Styling */
     .header-container {
-        background: linear-gradient(135deg, #4a4a4a, #6c757d); /* Gray background */
+        background: linear-gradient(135deg, #4a4a4a, #6c757d);
         color: white;
         text-align: center;
         padding: 20px;
@@ -80,7 +80,6 @@
         object-fit: cover;
         border-radius: 10px;
         margin-right: 20px;
-        border: none;
     }
 
     /* Pet Details */
@@ -224,23 +223,36 @@
 
 <!-- 🛠️ JavaScript -->
 <script>
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
     function showSellerDetails(petId) {
-        event.preventDefault(); // ✅ Prevents form submission (reload)
-        
-        fetch(event.target.action, {
+        event.preventDefault(); // Prevents form submission (reload)
+
+        let form = event.target;
+        let formData = new FormData(form);
+
+        fetch(form.action, {
             method: "POST",
-            body: new FormData(event.target),
-            headers: { "X-Requested-With": "XMLHttpRequest" }
+            body: formData,
+            headers: {
+                "X-CSRFToken": getCSRFToken(),  // Add CSRF token to request
+                "X-Requested-With": "XMLHttpRequest"
+            },
         })
-        .then(response => {
-            if (response.ok) {
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
                 let sellerDiv = document.getElementById("seller-" + petId);
-                sellerDiv.style.display = "block"; // ✅ Show seller details
+                sellerDiv.style.display = "block"; // Show seller details
+            } else {
+                alert("Error: CSRF verification failed.");
             }
         })
         .catch(error => console.error("Error:", error));
 
-        return false; // ✅ Prevents page refresh
+        return false; // Prevents page refresh
     }
 </script>
 

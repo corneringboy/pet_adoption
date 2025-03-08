@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, BuyerProfile, SellerProfile, Pet
 
+# ✅ Custom User Admin
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ["email", "full_name", "phone_number", "role", "is_staff", "is_active"]  # ✅ Updated to avoid username error
@@ -31,9 +32,8 @@ if not admin.site.is_registered(CustomUser):
 # ✅ Register other models
 admin.site.register(BuyerProfile)
 admin.site.register(SellerProfile)
-admin.site.register(Pet)
 
-# ✅ Additional CustomUserAdmin for better admin control
+# ✅ Enhanced Custom User Admin
 class EnhancedCustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ['email', 'phone_number', 'is_staff', 'is_active']
@@ -57,3 +57,10 @@ class EnhancedCustomUserAdmin(UserAdmin):
 # ✅ Ensure CustomUserAdmin is properly registered
 admin.site.unregister(CustomUser)
 admin.site.register(CustomUser, EnhancedCustomUserAdmin)
+
+# ✅ Pet Admin - Allows searching by animal name
+class PetAdmin(admin.ModelAdmin):
+    list_display = ('animal', 'breed', 'age', 'adoption_status', 'seller')
+    search_fields = ('animal', 'breed', 'seller__user__email')  # ✅ Now you can search by animal name
+
+admin.site.register(Pet, PetAdmin)

@@ -6,7 +6,8 @@ from django.contrib.auth import views as auth_views  # Added for password reset 
 from .views import (
     home, about, contact, login_view, signup_view, 
     buyer_dashboard, seller_dashboard, custom_logout, 
-    search_results, pet_list, add_pet, edit_pet, delete_pet, express_interest  # ✅ Added express_interest
+    search_results, pet_list, add_pet, edit_pet, delete_pet, express_interest,  # ✅ Added express_interest
+    get_csrf_token  # ✅ Added CSRF token view
 )
 
 urlpatterns = [
@@ -47,6 +48,11 @@ urlpatterns = [
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    # ✅ CSRF Token Fetching
+    path('csrf/', get_csrf_token, name='csrf_token'),  # ✅ New URL for fetching CSRF token
+    
+    path("add_pet/", add_pet, name="add_pet"),
 ]
 
 # 📂 Serve Media Files in Development Mode

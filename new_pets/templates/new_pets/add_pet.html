@@ -2,33 +2,21 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- 🏠 New Header Section inside a Gray Container -->
     <div class="bg-secondary text-white p-4 text-center rounded shadow-sm">
         <h2 class="fw-bold">Manage Your Pet Listings</h2>
         <p class="mb-0">List new pets for adoption and connect with potential adopters.</p>
     </div>
 
-    <!-- ✨ Add Pet Form -->
     <div class="card p-4 shadow-sm bg-white mt-4 mb-4">
         <h4 class="text-center text-success fw-bold">List a New Pet for Adoption</h4>
         <form method="POST" enctype="multipart/form-data" id="addPetForm">
             {% csrf_token %}
             <div class="row g-3">
-                <div class="col-md-6">
-                    {{ form.name.label_tag }} {{ form.name }}
-                </div>
-                <div class="col-md-6">
-                    {{ form.breed.label_tag }} {{ form.breed }}
-                </div>
-                <div class="col-md-6">
-                    {{ form.age.label_tag }} {{ form.age }}
-                </div>
-                <div class="col-md-6">
-                    {{ form.adoption_status.label_tag }} {{ form.adoption_status }}
-                </div>
-                <div class="col-12">
-                    {{ form.description.label_tag }} {{ form.description }}
-                </div>
+                <div class="col-md-6">{{ form.name.label_tag }} {{ form.name }}</div>
+                <div class="col-md-6">{{ form.breed.label_tag }} {{ form.breed }}</div>
+                <div class="col-md-6">{{ form.age.label_tag }} {{ form.age }}</div>
+                <div class="col-md-6">{{ form.adoption_status.label_tag }} {{ form.adoption_status }}</div>
+                <div class="col-12">{{ form.description.label_tag }} {{ form.description }}</div>
                 <div class="col-12">
                     {{ form.image.label_tag }} {{ form.image }}
                     <img id="imagePreview" src="#" class="img-thumbnail mt-2 d-none" style="max-width: 200px;">
@@ -38,12 +26,11 @@
         </form>
     </div>
 
-    <!-- 🐕 Listed Pets -->
     <div class="mt-4">
         <h4 class="text-primary text-center fw-bold">Your Listed Pets</h4>
         <div class="d-flex flex-column align-items-center" id="petGrid">
             {% for pet in pets %}
-            <div class="card shadow-sm p-3 mb-4 border-0 w-75">
+            <div class="card shadow-sm p-3 mb-4 border-0 w-75 pet-card">
                 <div class="row">
                     <div class="col-md-4">
                         <img src="{{ pet.image.url }}" class="img-fluid rounded pet-thumbnail" alt="{{ pet.name }}">
@@ -63,11 +50,10 @@
                             <p class="interest">
                                 ❤️ <span class="interest-count text-danger">{{ pet.interest_count }}</span> Interested Buyers
                             </p>
-                            
-                            <!-- Interested Buyer Details -->
+
                             <div class="interested-buyers mt-3">
                                 <h6 class="fw-bold">Interested Buyers</h6>
-                                <ul class="list-group">
+                                <ul class="list-group interested-buyers-list" id="buyersList-{{ pet.id }}">
                                     {% for buyer in pet.interested_buyers.all %}
                                         <li class="list-group-item">
                                             <strong>{{ buyer.full_name }}</strong><br>
@@ -80,7 +66,10 @@
                                 </ul>
                             </div>
 
-                            <!-- Edit/Delete Buttons -->
+                            <button class="btn btn-outline-primary express-interest-btn" data-pet-id="{{ pet.id }}">
+                                ❤️ Express Interest
+                            </button>
+
                             <div class="d-flex justify-content-between mt-3">
                                 <a href="{% url 'edit_pet' pet.id %}" class="btn btn-warning btn-sm">✏️ Edit</a>
                                 <form method="POST" action="{% url 'delete_pet' pet.id %}">
@@ -93,16 +82,14 @@
                 </div>
             </div>
             {% empty %}
-            <p class="text-center text-muted">You haven't listed any pets yet. Add one now! 🐾</p>
+            <p class="text-center text-muted" id="noPetsMessage">You haven't listed any pets yet. Add one now! 🐾</p>
             {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- 💡 JavaScript for Interactions -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // 🖼️ Image Preview
         document.querySelector("input[type='file']").addEventListener("change", function (event) {
             const reader = new FileReader();
             reader.onload = function () {
@@ -113,70 +100,70 @@
             reader.readAsDataURL(event.target.files[0]);
         });
 
-        // 📊 Update Analytics
-        function updateAnalytics() {
-            const petCards = document.querySelectorAll(".card");
-            document.getElementById("totalPets").textContent = petCards.length;
+        document.getElementById("addPetForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
 
-            let totalInterests = 0;
-            let mostPopularPet = "";
-            let maxInterest = 0;
-
-            petCards.forEach(card => {
-                const interestCount = parseInt(card.querySelector(".interest-count").textContent);
-                totalInterests += interestCount;
-                if (interestCount > maxInterest) {
-                    maxInterest = interestCount;
-                    mostPopularPet = card.querySelector(".card-title").textContent;
+            fetch("{% url 'add_pet' %}", {
+                method: "POST",
+                headers: {"X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value},
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Pet added successfully!");
+                    document.getElementById("addPetForm").reset();
+                    document.getElementById("imagePreview").classList.add("d-none");
+                    location.reload(); 
+                } else {
+                    alert("Error adding pet. Please check the form.");
                 }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+        document.querySelectorAll(".express-interest-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                const petId = this.dataset.petId;
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                fetch(`/express_interest/${petId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Interest recorded!");
+
+                        // ✅ Update interested buyers list dynamically
+                        const buyersList = document.getElementById(`buyersList-${petId}`);
+                        buyersList.innerHTML = "";
+
+                        data.buyers.forEach(buyer => {
+                            buyersList.innerHTML += `
+                                <li class="list-group-item">
+                                    <strong>${buyer.name}</strong><br>
+                                    📩 ${buyer.email}<br>
+                                    📞 ${buyer.phone}
+                                </li>
+                            `;
+                        });
+
+                        // ✅ Update interest count
+                        document.querySelector(`.interest-count`).textContent = data.interest_count;
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
             });
-
-            document.getElementById("totalInterests").textContent = totalInterests;
-            document.getElementById("popularPet").textContent = mostPopularPet || "No pets listed yet";
-        }
-
-        // 🔄 Auto-refresh Interest Counter every 60 seconds
-        setInterval(updateAnalytics, 60000);
-        updateAnalytics();
+        });
     });
 </script>
-
-<!-- Custom CSS for Better UI -->
-<style>
-    body {
-        font-family: 'Nunito', sans-serif;
-    }
-    .pet-card {
-        overflow: hidden;
-        border-radius: 10px;
-    }
-    .pet-thumbnail {
-        transition: transform 0.3s ease-in-out;
-        width: 100%;
-        height: auto;
-    }
-    .pet-thumbnail:hover {
-        transform: scale(1.05);
-    }
-    .interest {
-        font-size: 16px;
-        font-weight: bold;
-        color: #FF6B6B;
-    }
-    .card {
-        transition: all 0.3s ease-in-out;
-    }
-    .card:hover {
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    }
-    .btn {
-        border-radius: 10px;
-    }
-    .list-group-item {
-        font-size: 14px;
-        background: #f8f9fa;
-        border: none;
-    }
-</style>
 
 {% endblock %}

@@ -26,7 +26,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # ✅ Ensure CSRF Middleware is enabled
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -62,7 +62,10 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    # ... (existing validators)
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Internationalization
@@ -76,10 +79,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'new_pets' / 'static']  # ✅ Corrected path
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # ✅ Static files for production
 
-AUTHENTICATION_BACKENDS = [
-     'django.contrib.auth.backends.AllowAllUsersModelBackend',
-]
-
 ### ✅ FIXED MEDIA FILES CONFIGURATION ###
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'  # ✅ Corrected path for uploaded files
@@ -92,6 +91,11 @@ LOGIN_URL = 'login'             # ✅ URL name for login page
 LOGIN_REDIRECT_URL = 'home'     # ✅ Added to redirect after login
 LOGOUT_REDIRECT_URL = 'home'    # ✅ Redirect after logout
 
+# ✅ Authentication Backend
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # ✅ Added Email Backend for Account Confirmation & Password Reset
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # ✅ Prints emails to the console (for testing)
 EMAIL_HOST = 'smtp.gmail.com'  # ✅ Update for real SMTP server
@@ -100,6 +104,11 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@gmail.com'  # ✅ Replace with your email
 EMAIL_HOST_PASSWORD = 'your-email-password'  # ❗ Use environment variables in production
 
+# ✅ CSRF Settings (Ensure Secure Handling in Production)
+CSRF_COOKIE_SECURE = False  # ✅ Set to True in production with HTTPS
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_NAME = 'csrftoken'
+
 # ✅ Default Auto Field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
