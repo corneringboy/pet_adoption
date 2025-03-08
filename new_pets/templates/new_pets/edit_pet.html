@@ -1,0 +1,36 @@
+{% extends 'new_pets/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center text-primary">Edit Pet Details</h2>
+    <div class="card p-4 shadow-sm bg-white mt-4">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    {{ form.name.label_tag }} {{ form.name }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.breed.label_tag }} {{ form.breed }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.age.label_tag }} {{ form.age }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.adoption_status.label_tag }} {{ form.adoption_status }}
+                </div>
+                <div class="col-12">
+                    {{ form.description.label_tag }} {{ form.description }}
+                </div>
+                <div class="col-12">
+                    {{ form.image.label_tag }} {{ form.image }}
+                    {% if pet.image %}
+                        <img src="{{ pet.image.url }}" class="img-thumbnail mt-2" style="max-width: 200px;">
+                    {% endif %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success mt-3 w-100">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

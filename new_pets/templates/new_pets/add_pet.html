@@ -2,33 +2,15 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="text-center text-primary fw-bold">🐶 Seller Dashboard: Manage Your Pets 🐾</h2>
-
-    <!-- 📊 Seller Analytics -->
-    <div class="row text-center mb-4">
-        <div class="col-md-4">
-            <div class="p-3 bg-light shadow rounded">
-                <h5 class="fw-bold">Total Pets Listed</h5>
-                <h3 id="totalPets" class="text-info">0</h3>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="p-3 bg-light shadow rounded">
-                <h5 class="fw-bold">Total Interests</h5>
-                <h3 id="totalInterests" class="text-danger">0</h3>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="p-3 bg-light shadow rounded">
-                <h5 class="fw-bold">Most Popular Pet</h5>
-                <h4 id="popularPet" class="text-success">🐾 Loading...</h4>
-            </div>
-        </div>
+    <!-- 🏠 New Header Section inside a Gray Container -->
+    <div class="bg-secondary text-white p-4 text-center rounded shadow-sm">
+        <h2 class="fw-bold">Manage Your Pet Listings</h2>
+        <p class="mb-0">List new pets for adoption and connect with potential adopters.</p>
     </div>
 
     <!-- ✨ Add Pet Form -->
-    <div class="card p-4 shadow-sm bg-white mb-4">
-        <h4 class="text-center text-success fw-bold">Add a New Pet</h4>
+    <div class="card p-4 shadow-sm bg-white mt-4 mb-4">
+        <h4 class="text-center text-success fw-bold">List a New Pet for Adoption</h4>
         <form method="POST" enctype="multipart/form-data" id="addPetForm">
             {% csrf_token %}
             <div class="row g-3">
@@ -52,37 +34,60 @@
                     <img id="imagePreview" src="#" class="img-thumbnail mt-2 d-none" style="max-width: 200px;">
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-3 w-100">🐾 Add Pet</button>
+            <button type="submit" class="btn btn-primary mt-3 w-100">Add Pet</button>
         </form>
     </div>
 
-    <!-- 🐕 Pets List -->
+    <!-- 🐕 Listed Pets -->
     <div class="mt-4">
-        <h4 class="text-primary text-center fw-bold">Your Pets</h4>
-        <div class="row" id="petGrid">
+        <h4 class="text-primary text-center fw-bold">Your Listed Pets</h4>
+        <div class="d-flex flex-column align-items-center" id="petGrid">
             {% for pet in pets %}
-            <div class="col-md-4 col-sm-6">
-                <div class="card shadow-sm p-3 mb-4 border-0">
-                    <div class="pet-card">
-                        <img src="{{ pet.image.url }}" class="card-img-top pet-thumbnail rounded" alt="{{ pet.name }}">
+            <div class="card shadow-sm p-3 mb-4 border-0 w-75">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img src="{{ pet.image.url }}" class="img-fluid rounded pet-thumbnail" alt="{{ pet.name }}">
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title text-center text-dark fw-bold">{{ pet.name }}</h5>
-                        <p><strong>Breed:</strong> {{ pet.breed }}</p>
-                        <p><strong>Age:</strong> {{ pet.age }} years</p>
-                        <p><strong>Status:</strong> 
-                            {% if pet.adoption_status == "Available" %}
-                                <span class="badge bg-success">Available</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Adopted</span>
-                            {% endif %}
-                        </p>
-                        <p class="interest">
-                            ❤️ <span class="interest-count text-danger">{{ pet.interest_count }}</span> Interested Buyers
-                        </p>
-                        <div class="d-flex justify-content-between">
-                            <button class="btn btn-warning btn-sm edit-btn">✏️ Edit</button>
-                            <button class="btn btn-danger btn-sm delete-btn">🗑️ Delete</button>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title text-dark fw-bold">{{ pet.name }}</h5>
+                            <p><strong>Breed:</strong> {{ pet.breed }}</p>
+                            <p><strong>Age:</strong> {{ pet.age }} years</p>
+                            <p><strong>Status:</strong> 
+                                {% if pet.adoption_status == "Available" %}
+                                    <span class="badge bg-success">Available</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Adopted</span>
+                                {% endif %}
+                            </p>
+                            <p class="interest">
+                                ❤️ <span class="interest-count text-danger">{{ pet.interest_count }}</span> Interested Buyers
+                            </p>
+                            
+                            <!-- Interested Buyer Details -->
+                            <div class="interested-buyers mt-3">
+                                <h6 class="fw-bold">Interested Buyers</h6>
+                                <ul class="list-group">
+                                    {% for interest in pet.interested_buyers.all %}
+                                        <li class="list-group-item">
+                                            <strong>{{ interest.buyer.full_name }}</strong><br>
+                                            📩 {{ interest.buyer.email }}<br>
+                                            📞 {{ interest.buyer.phone_number }}
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item text-muted">No interests yet.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+
+                            <!-- Edit/Delete Buttons -->
+                            <div class="d-flex justify-content-between mt-3">
+                                <a href="{% url 'edit_pet' pet.id %}" class="btn btn-warning btn-sm">✏️ Edit</a>
+                                <form method="POST" action="{% url 'delete_pet' pet.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -132,7 +137,6 @@
 
         // 🔄 Auto-refresh Interest Counter every 60 seconds
         setInterval(updateAnalytics, 60000);
-
         updateAnalytics();
     });
 </script>
@@ -148,6 +152,8 @@
     }
     .pet-thumbnail {
         transition: transform 0.3s ease-in-out;
+        width: 100%;
+        height: auto;
     }
     .pet-thumbnail:hover {
         transform: scale(1.05);
@@ -165,6 +171,11 @@
     }
     .btn {
         border-radius: 10px;
+    }
+    .list-group-item {
+        font-size: 14px;
+        background: #f8f9fa;
+        border: none;
     }
 </style>
 

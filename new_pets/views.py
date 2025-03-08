@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -164,3 +164,27 @@ def add_pet(request):
     pets = Pet.objects.filter(seller=seller_profile)
 
     return render(request, "new_pets/add_pet.html", {"form": form, "pets": pets})
+
+# ✅ New Edit Pet Function (Sellers Can Edit Pets)
+@login_required
+def edit_pet(request, pet_id):
+    pet = get_object_or_404(Pet, id=pet_id, seller=request.user.sellerprofile)
+
+    if request.method == "POST":
+        form = PetForm(request.POST, request.FILES, instance=pet)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pet details updated successfully!")
+            return redirect("add_pet")  # ✅ Redirect back to seller dashboard
+    else:
+        form = PetForm(instance=pet)
+
+    return render(request, "new_pets/edit_pet.html", {"form": form, "pet": pet})
+
+# ✅ New Delete Pet Function (Sellers Can Remove Their Pets)
+@login_required
+def delete_pet(request, pet_id):
+    pet = get_object_or_404(Pet, id=pet_id, seller=request.user.sellerprofile)
+    pet.delete()
+    messages.success(request, "Pet deleted successfully!")
+    return redirect("add_pet")  # ✅ Redirect back to the seller dashboard
