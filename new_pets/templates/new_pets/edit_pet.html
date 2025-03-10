@@ -28,6 +28,12 @@
                         <img src="{{ pet.image.url }}" class="img-thumbnail mt-2" style="max-width: 200px;">
                     {% endif %}
                 </div>
+                <!-- Added Store Location Field -->
+                <div class="col-12">
+                    <label for="store_location" class="form-label">Store Location:</label>
+                    <input type="text" name="store_location" class="form-control" 
+                           value="{{ seller_profile.store_location|default:'' }}" required>
+                </div>
             </div>
             <button type="submit" class="btn btn-success mt-3 w-100">Save Changes</button>
         </form>

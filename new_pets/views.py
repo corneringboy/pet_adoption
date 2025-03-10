@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from .models import CustomUser, BuyerProfile, SellerProfile, Pet
 from .forms import CustomUserCreationForm, CustomUserForm, PetForm
+from django.core.exceptions import ObjectDoesNotExist
 
 def home(request):
     return render(request, "new_pets/home.html")
@@ -26,6 +27,8 @@ def signup_view(request, role=None):
         phone = request.POST.get("phone")
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
+        address = request.POST.get("address", "").strip()  # Ensure address is collected
+        store_location = request.POST.get("store_location", "").strip()
         role = request.POST.get("role") or role
 
         if password1 != password2:
@@ -49,24 +52,14 @@ def signup_view(request, role=None):
         )
 
         if role == "buyer":
-            BuyerProfile.objects.create(user=user, phone=phone)
+            BuyerProfile.objects.get_or_create(user=user, phone=phone, address=address)  # Address added
         elif role == "seller":
-            SellerProfile.objects.create(user=user)
+            SellerProfile.objects.get_or_create(user=user, store_location=store_location)  # Ensure store location is saved
 
         messages.success(request, "Account created successfully! Please log in.")
         return redirect("login")
 
     return render(request, "new_pets/signup.html", {"role": role})
-
-def simple_signup_view(request):
-    if request.method == "POST":
-        form = CustomUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('login')
-    else:
-        form = CustomUserForm()
-    return render(request, 'signup.html', {'form': form})
 
 def login_view(request, role=None):
     if request.method == "POST":
@@ -110,8 +103,19 @@ def seller_dashboard(request):
     return render(request, "new_pets/seller_dashboard.html")
 
 def pet_list(request):
-    pets = Pet.objects.all().select_related("seller")
-    return render(request, "new_pets/pet_list.html", {"pets": pets})
+    pets = Pet.objects.select_related("seller", "seller__user")
+    
+    buyer_profile = None
+    if request.user.is_authenticated and request.user.role == "buyer":
+        try:
+            buyer_profile = BuyerProfile.objects.get(user=request.user)
+        except BuyerProfile.DoesNotExist:
+            buyer_profile = None
+
+    for pet in pets:
+        pet.seller_address = pet.seller.store_location if pet.seller and pet.seller.store_location else "Address not provided"
+
+    return render(request, "new_pets/pet_list.html", {"pets": pets, "buyer_profile": buyer_profile})
 
 def search_results(request):
     query = request.GET.get("q")
@@ -125,7 +129,7 @@ def add_pet(request):
         messages.error(request, "Only sellers can add pets.")
         return redirect("home")
 
-    seller_profile = SellerProfile.objects.get(user=request.user)
+    seller_profile = get_object_or_404(SellerProfile, user=request.user)
 
     if request.method == "POST":
         form = PetForm(request.POST, request.FILES)
@@ -133,31 +137,19 @@ def add_pet(request):
             pet = form.save(commit=False)
             pet.seller = seller_profile
             pet.save()
-            
-            return JsonResponse({
-                "success": True,
-                "pet": {
-                    "id": pet.id,
-                    "name": pet.name,
-                    "breed": pet.breed,
-                    "age": pet.age,
-                    "adoption_status": pet.adoption_status,
-                    "image_url": pet.image.url if pet.image else None,
-                    "interest_count": pet.interested_buyers.count(),
-                }
-            })
+            return JsonResponse({"success": True})
         else:
             return JsonResponse({"success": False, "error": "Invalid form data"}, status=400)
 
-    else:
-        form = PetForm()
-    
+    form = PetForm()
     pets = Pet.objects.filter(seller=seller_profile)
     return render(request, "new_pets/add_pet.html", {"form": form, "pets": pets})
 
 @login_required
 def edit_pet(request, pet_id):
-    pet = get_object_or_404(Pet, id=pet_id, seller=request.user.sellerprofile)
+    seller_profile = get_object_or_404(SellerProfile, user=request.user)
+    pet = get_object_or_404(Pet, id=pet_id, seller=seller_profile)
+
     if request.method == "POST":
         form = PetForm(request.POST, request.FILES, instance=pet)
         if form.is_valid():
@@ -170,7 +162,8 @@ def edit_pet(request, pet_id):
 
 @login_required
 def delete_pet(request, pet_id):
-    pet = get_object_or_404(Pet, id=pet_id, seller=request.user.sellerprofile)
+    seller_profile = get_object_or_404(SellerProfile, user=request.user)
+    pet = get_object_or_404(Pet, id=pet_id, seller=seller_profile)
     pet.delete()
     messages.success(request, "Pet deleted successfully!")
     return redirect("add_pet")
@@ -189,5 +182,12 @@ def express_interest(request, pet_id):
         return JsonResponse({"message": "Interest recorded!"})
     return JsonResponse({"error": "Invalid request"}, status=400)
 
-def success_page(request):
-    return render(request, "new_pets/success.html", {"message": "Pet added successfully!"})
+@login_required
+def edit_seller_profile(request):
+    seller_profile, created = SellerProfile.objects.get_or_create(user=request.user)
+    if request.method == "POST":
+        seller_profile.store_location = request.POST.get("store_location", seller_profile.store_location)
+        seller_profile.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect("seller_dashboard")
+    return render(request, "new_pets/edit_seller_profile.html", {"seller_profile": seller_profile})

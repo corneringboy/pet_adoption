@@ -51,8 +51,6 @@ urlpatterns = [
 
     # ✅ CSRF Token Fetching
     path('csrf/', get_csrf_token, name='csrf_token'),  # ✅ New URL for fetching CSRF token
-    
-    path("add_pet/", add_pet, name="add_pet"),
 ]
 
 # 📂 Serve Media Files in Development Mode
