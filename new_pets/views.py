@@ -7,10 +7,9 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from .models import CustomUser, BuyerProfile, SellerProfile, Pet
+from .models import CustomUser, BuyerProfile, SellerProfile, Pet, ContactMessage
 from .forms import CustomUserCreationForm, CustomUserForm, PetForm
 from django.core.exceptions import ObjectDoesNotExist
-from .models import ContactMessage
 
 def home(request):
     return render(request, "new_pets/home.html")
@@ -28,7 +27,7 @@ def signup_view(request, role=None):
         phone = request.POST.get("phone")
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
-        address = request.POST.get("address", "").strip()  # Ensure address is collected
+        address = request.POST.get("address", "").strip()
         store_location = request.POST.get("store_location", "").strip()
         role = request.POST.get("role") or role
 
@@ -53,9 +52,9 @@ def signup_view(request, role=None):
         )
 
         if role == "buyer":
-            BuyerProfile.objects.get_or_create(user=user, phone=phone, address=address)  # Address added
+            BuyerProfile.objects.get_or_create(user=user, phone=phone, address=address)
         elif role == "seller":
-            SellerProfile.objects.get_or_create(user=user, store_location=store_location)  # Ensure store location is saved
+            SellerProfile.objects.get_or_create(user=user, store_location=store_location)
 
         messages.success(request, "Account created successfully! Please log in.")
         return redirect("login")
@@ -123,14 +122,18 @@ def search_results(request):
     pets = Pet.objects.filter(name__icontains=query) if query else []
     return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
 
-@csrf_protect  
+@csrf_protect
 @login_required
 def add_pet(request):
     if request.user.role != "seller":
         messages.error(request, "Only sellers can add pets.")
         return redirect("home")
 
-    seller_profile = get_object_or_404(SellerProfile, user=request.user)
+    try:
+        seller_profile = SellerProfile.objects.get(user=request.user)
+    except SellerProfile.DoesNotExist:
+        messages.error(request, "Please complete your seller profile first.")
+        return redirect("seller_dashboard")
 
     if request.method == "POST":
         form = PetForm(request.POST, request.FILES)
@@ -138,13 +141,26 @@ def add_pet(request):
             pet = form.save(commit=False)
             pet.seller = seller_profile
             pet.save()
-            return JsonResponse({"success": True})
+            
+            # Handle both AJAX and regular form submissions
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": True})
+            return redirect("seller_dashboard")
         else:
-            return JsonResponse({"success": False, "error": "Invalid form data"}, status=400)
+            # Handle AJAX errors
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": "Invalid form data"}, status=400)
+            
+            messages.error(request, "There was an error in your submission.")
 
-    form = PetForm()
+    else:
+        form = PetForm()
+
     pets = Pet.objects.filter(seller=seller_profile)
-    return render(request, "new_pets/add_pet.html", {"form": form, "pets": pets})
+    return render(request, "new_pets/add_pet.html", {
+        "form": form,
+        "pets": pets
+    })
 
 @login_required
 def edit_pet(request, pet_id):
@@ -193,7 +209,6 @@ def edit_seller_profile(request):
         return redirect("seller_dashboard")
     return render(request, "new_pets/edit_seller_profile.html", {"seller_profile": seller_profile})
 
-
 def contact_submit(request):
     if request.method == "POST":
         name = request.POST.get("name")
@@ -201,9 +216,7 @@ def contact_submit(request):
         inquiry_type = request.POST.get("inquiry_type")
         message = request.POST.get("message")
 
-        # Save message to the database (ensure ContactMessage model exists)
         ContactMessage.objects.create(name=name, email=email, inquiry_type=inquiry_type, message=message)
-
         messages.success(request, "Message sent successfully!")
         return redirect("contact")
 
