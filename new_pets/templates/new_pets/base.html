@@ -49,7 +49,7 @@
             color: #FFA726;
         }
 
-        /* Browse Pets Button */
+        /* Browse Pets / Manage Listings Button */
         .browse-button {
             background: #FFA726;
             color: black;
@@ -81,7 +81,7 @@
         .dropdown-menu {
             display: none;
             position: absolute;
-            background: #f2f2f2; /* Light Gray Background */
+            background: #f2f2f2;
             right: 0;
             min-width: 200px;
             text-align: center;
@@ -149,8 +149,16 @@
                 <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
 
-            <!-- Browse Pets Button (Replacing Search Bar) -->
-            <a href="{% url 'pet_list' %}" class="browse-button">Browse Pets</a>
+            <!-- Browse Pets / Manage Listings Button -->
+            {% if user.is_authenticated %}
+                {% if user.role == "seller" %}
+                    <a href="{% url 'add_pet' %}" class="browse-button">Manage Listings</a>
+                {% else %}
+                    <a href="{% url 'pet_list' %}" class="browse-button">Browse Pets</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'pet_list' %}" class="browse-button">Browse Pets</a>
+            {% endif %}
 
             <!-- Samsung-style White Emoji for Login/Signup -->
             <div class="emoji-container" id="user-menu">

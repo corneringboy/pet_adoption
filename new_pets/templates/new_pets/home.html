@@ -171,7 +171,16 @@
 <section class="hero-section">
     <h1>Find Your Forever Friend</h1>
     <p>Discover loving pets waiting for their perfect home. Join our community of pet lovers today.</p>
-    <a href="{% url 'pet_list' %}" class="cta-button">Start Your Journey</a>
+    
+    {% if user.is_authenticated %}
+        {% if user.role == "seller" %}
+            <a href="{% url 'add_pet' %}" class="cta-button">Start Your Journey</a>
+        {% else %}
+            <a href="{% url 'pet_list' %}" class="cta-button">Start Your Journey</a>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'pet_list' %}" class="cta-button">Start Your Journey</a>
+    {% endif %}
 </section>
 
 <!-- Features Section -->
@@ -235,4 +244,3 @@
 </footer>
 
 {% endblock %}
-
