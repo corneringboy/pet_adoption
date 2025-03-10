@@ -10,6 +10,7 @@ from django.middleware.csrf import get_token
 from .models import CustomUser, BuyerProfile, SellerProfile, Pet
 from .forms import CustomUserCreationForm, CustomUserForm, PetForm
 from django.core.exceptions import ObjectDoesNotExist
+from .models import ContactMessage
 
 def home(request):
     return render(request, "new_pets/home.html")
@@ -191,3 +192,19 @@ def edit_seller_profile(request):
         messages.success(request, "Profile updated successfully!")
         return redirect("seller_dashboard")
     return render(request, "new_pets/edit_seller_profile.html", {"seller_profile": seller_profile})
+
+
+def contact_submit(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        inquiry_type = request.POST.get("inquiry_type")
+        message = request.POST.get("message")
+
+        # Save message to the database (ensure ContactMessage model exists)
+        ContactMessage.objects.create(name=name, email=email, inquiry_type=inquiry_type, message=message)
+
+        messages.success(request, "Message sent successfully!")
+        return redirect("contact")
+
+    return redirect("contact")

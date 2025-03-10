@@ -1,4 +1,6 @@
 from django.urls import path
+from .views import contact, contact_submit  # Import the view
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LoginView
@@ -51,6 +53,8 @@ urlpatterns = [
 
     # ✅ CSRF Token Fetching
     path('csrf/', get_csrf_token, name='csrf_token'),  # ✅ New URL for fetching CSRF token
+     path("contact/", contact, name="contact"),
+    path("contact/submit/", contact_submit, name="contact_submit"),  # ✅ Ensure this exists  
 ]
 
 # 📂 Serve Media Files in Development Mode
