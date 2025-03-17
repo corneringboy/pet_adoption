@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Pet  # ✅ Added Pet model
+from .models import CustomUser, Pet
 
 class CustomUserCreationForm(UserCreationForm):
     business_name = forms.CharField(required=False)
@@ -20,14 +20,40 @@ class CustomUserCreationForm(UserCreationForm):
                   'vat_tax_id', 'business_address', 'business_description', 
                   'government_id', 'business_license']
 
-# ✅ Added CustomUserForm without removing any existing code
 class CustomUserForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['email', 'phone_number', 'password1', 'password2']  # No 'username'
+        fields = ['email', 'phone_number', 'password1', 'password2']
 
-# ✅ New Pet Form for Adding Pets
 class PetForm(forms.ModelForm):
+    animal = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            "placeholder": "Enter the type of pet (e.g., Dog, Cat, Bird)"
+        })
+    )
+    breed = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            "placeholder": "Enter breed (optional)"
+        })
+    )
+    age = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            "placeholder": "Enter age in years"
+        })
+    )
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "placeholder": "Provide a short description about the pet",
+            "rows": 3
+        }),
+        required=False
+    )
+    image = forms.ImageField(required=False)
+
     class Meta:
         model = Pet
-        fields = ["name", "breed", "age", "image", "description", "adoption_status"]
+        fields = ["animal", "breed", "age", "image", "description", "adoption_status"]

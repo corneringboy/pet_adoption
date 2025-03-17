@@ -119,21 +119,19 @@ def pet_list(request):
 
 def search_results(request):
     query = request.GET.get("q")
-    pets = Pet.objects.filter(name__icontains=query) if query else []
+    pets = Pet.objects.filter(animal__icontains=query) if query else []
     return render(request, "new_pets/search_results.html", {"pets": pets, "query": query})
 
 @csrf_protect
 @login_required
 def add_pet(request):
     if request.user.role != "seller":
-        messages.error(request, "Only sellers can add pets.")
-        return redirect("home")
+        return JsonResponse({"error": "Only sellers can add pets."}, status=403)
 
     try:
         seller_profile = SellerProfile.objects.get(user=request.user)
     except SellerProfile.DoesNotExist:
-        messages.error(request, "Please complete your seller profile first.")
-        return redirect("seller_dashboard")
+        return JsonResponse({"error": "Please complete your seller profile first."}, status=403)
 
     if request.method == "POST":
         form = PetForm(request.POST, request.FILES)
@@ -142,25 +140,29 @@ def add_pet(request):
             pet.seller = seller_profile
             pet.save()
             
-            # Handle both AJAX and regular form submissions
+            # ✅ Return pet data for AJAX request
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({"success": True})
-            return redirect("seller_dashboard")
-        else:
-            # Handle AJAX errors
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({"success": False, "error": "Invalid form data"}, status=400)
+                return JsonResponse({
+                    "success": True,
+                    "pet": {
+                        "id": pet.id,
+                        "animal": pet.animal,
+                        "breed": pet.breed or "Unknown",
+                        "age": pet.age,
+                        "status": pet.adoption_status,
+                        "image_url": pet.image.url,
+                        "interest_count": pet.interest_count
+                    }
+                })
             
+            return redirect("add_pet")
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": form.errors}, status=400)
             messages.error(request, "There was an error in your submission.")
 
-    else:
-        form = PetForm()
-
     pets = Pet.objects.filter(seller=seller_profile)
-    return render(request, "new_pets/add_pet.html", {
-        "form": form,
-        "pets": pets
-    })
+    return render(request, "new_pets/add_pet.html", {"pets": pets})
 
 @login_required
 def edit_pet(request, pet_id):
@@ -171,7 +173,6 @@ def edit_pet(request, pet_id):
         form = PetForm(request.POST, request.FILES, instance=pet)
         if form.is_valid():
             form.save()
-            messages.success(request, "Pet details updated successfully!")
             return redirect("add_pet")
     else:
         form = PetForm(instance=pet)
@@ -182,7 +183,6 @@ def delete_pet(request, pet_id):
     seller_profile = get_object_or_404(SellerProfile, user=request.user)
     pet = get_object_or_404(Pet, id=pet_id, seller=seller_profile)
     pet.delete()
-    messages.success(request, "Pet deleted successfully!")
     return redirect("add_pet")
 
 def get_csrf_token(request):

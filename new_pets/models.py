@@ -76,10 +76,9 @@ class SellerProfile(models.Model):
 
 # ✅ Pet Model (Updated & Integrated)
 class Pet(models.Model):
-    name = models.CharField(max_length=255)  # ✅ Added name field
-    animal = models.CharField(max_length=50, default="Unknown")  # ✅ Set default value to prevent migration issues
+    animal = models.CharField(max_length=50)  # ✅ Changed from "name" to "animal"
     breed = models.CharField(max_length=100)
-    age = models.IntegerField()
+    age = models.DecimalField(max_digits=4, decimal_places=1)  # ✅ Allows decimal ages
     image = models.ImageField(upload_to='pet_images/', null=True, blank=True)  # ✅ Allows optional image
     description = models.TextField()
     adoption_status = models.CharField(
@@ -95,7 +94,7 @@ class Pet(models.Model):
         return "No Address Provided"
 
     def __str__(self):
-        return self.name
+        return self.animal  # ✅ Updated to return "animal" instead of "name"
 
 # ✅ Contact Message Model (Integrated)
 class ContactMessage(models.Model):

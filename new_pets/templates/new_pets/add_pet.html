@@ -12,13 +12,32 @@
         <form method="POST" enctype="multipart/form-data" id="addPetForm">
             {% csrf_token %}
             <div class="row g-3">
-                <div class="col-md-6">{{ form.name.label_tag }} {{ form.name }}</div>
-                <div class="col-md-6">{{ form.breed.label_tag }} {{ form.breed }}</div>
-                <div class="col-md-6">{{ form.age.label_tag }} {{ form.age }}</div>
-                <div class="col-md-6">{{ form.adoption_status.label_tag }} {{ form.adoption_status }}</div>
-                <div class="col-12">{{ form.description.label_tag }} {{ form.description }}</div>
+                <div class="col-md-6">
+                    <label for="id_animal">Animal Type:</label>
+                    <input type="text" name="animal" class="form-control" id="id_animal" placeholder="Enter animal type (e.g., Dog, Cat, Bird)" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="id_breed">Breed (Optional):</label>
+                    <input type="text" name="breed" class="form-control" id="id_breed" placeholder="Enter breed (optional)">
+                </div>
+                <div class="col-md-6">
+                    <label for="id_age">Age:</label>
+                    <input type="number" name="age" class="form-control" id="id_age" step="0.1" placeholder="Enter age in years (e.g., 2.5)" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="id_adoption_status">Adoption Status:</label>
+                    <select name="adoption_status" class="form-control" id="id_adoption_status" required>
+                        <option value="Available">Available</option>
+                        <option value="Adopted">Adopted</option>
+                    </select>
+                </div>
                 <div class="col-12">
-                    {{ form.image.label_tag }} {{ form.image }}
+                    <label for="id_description">Description:</label>
+                    <textarea name="description" class="form-control" id="id_description" placeholder="Provide a short description about the pet" required></textarea>
+                </div>
+                <div class="col-12">
+                    <label for="id_image">Image:</label>
+                    <input type="file" name="image" class="form-control" id="id_image" required>
                     <img id="imagePreview" src="#" class="img-thumbnail mt-2 d-none" style="max-width: 200px;">
                 </div>
             </div>
@@ -33,11 +52,11 @@
             <div class="card shadow-sm p-3 mb-4 border-0 w-75 pet-card">
                 <div class="row">
                     <div class="col-md-4">
-                        <img src="{{ pet.image.url }}" class="img-fluid rounded pet-thumbnail" alt="{{ pet.name }}">
+                        <img src="{{ pet.image.url }}" class="img-fluid rounded pet-thumbnail" alt="{{ pet.animal }}">
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
-                            <h5 class="card-title text-dark fw-bold">{{ pet.name }}</h5>
+                            <h5 class="card-title text-dark fw-bold">{{ pet.animal }}</h5>
                             <p><strong>Breed:</strong> {{ pet.breed }}</p>
                             <p><strong>Age:</strong> {{ pet.age }} years</p>
                             <p><strong>Status:</strong> 
@@ -90,6 +109,11 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const petForm = document.getElementById("addPetForm");
+        const petGrid = document.getElementById("petGrid");
+        const noPetsMessage = document.getElementById("noPetsMessage");
+
+        // ✅ Dynamic Image Preview
         document.querySelector("input[type='file']").addEventListener("change", function (event) {
             const reader = new FileReader();
             reader.onload = function () {
@@ -100,29 +124,121 @@
             reader.readAsDataURL(event.target.files[0]);
         });
 
-        document.getElementById("addPetForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            let formData = new FormData(this);
+        document.addEventListener("DOMContentLoaded", function () {
+    const petForm = document.getElementById("addPetForm");
+    const petGrid = document.getElementById("petGrid");
+    const noPetsMessage = document.getElementById("noPetsMessage");
 
-            fetch("{% url 'add_pet' %}", {
-                method: "POST",
-                headers: {"X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value},
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Pet added successfully!");
-                    document.getElementById("addPetForm").reset();
-                    document.getElementById("imagePreview").classList.add("d-none");
-                    location.reload(); 
-                } else {
-                    alert("Error adding pet. Please check the form.");
+    // ✅ Dynamic Image Preview
+    document.querySelector("#id_image").addEventListener("change", function (event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const preview = document.getElementById("imagePreview");
+            preview.src = reader.result;
+            preview.classList.remove("d-none");
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    });
+
+    // ✅ AJAX Submission
+    petForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        let formData = new FormData(petForm);
+
+        fetch("{% url 'add_pet' %}", {
+            method: "POST",
+            headers: { "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Pet added successfully!");
+
+                // ✅ Clear form fields
+                petForm.reset();
+                document.getElementById("imagePreview").classList.add("d-none");
+
+                // ✅ Remove "No pets" message if present
+                if (noPetsMessage) {
+                    noPetsMessage.remove();
                 }
-            })
-            .catch(error => console.error("Error:", error));
-        });
 
+                // ✅ Dynamically Add Pet to the List
+                let newPetHTML = `
+                    <div class="card shadow-sm p-3 mb-4 border-0 w-75 pet-card" id="pet-${data.pet.id}">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="${data.pet.image_url}" class="img-fluid rounded pet-thumbnail" alt="${data.pet.animal}">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title text-dark fw-bold">${data.pet.animal}</h5>
+                                    <p><strong>Breed:</strong> ${data.pet.breed || "N/A"}</p>
+                                    <p><strong>Age:</strong> ${data.pet.age} years</p>
+                                    <p><strong>Status:</strong> 
+                                        ${data.pet.status === "Available" ? '<span class="badge bg-success">Available</span>' : '<span class="badge bg-secondary">Adopted</span>'}
+                                    </p>
+                                    <p class="interest">
+                                        ❤️ <span class="interest-count text-danger">${data.pet.interest_count}</span> Interested Buyers
+                                    </p>
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <a href="/edit_pet/${data.pet.id}/" class="btn btn-warning btn-sm">✏️ Edit</a>
+                                        <button class="btn btn-danger btn-sm delete-pet-btn" data-pet-id="${data.pet.id}">🗑️ Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // ✅ Insert new pet at the top of the list
+                petGrid.insertAdjacentHTML("afterbegin", newPetHTML);
+
+                // ✅ Attach delete event listener to the new delete button
+                attachDeleteEvent();
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    // ✅ Function to handle Delete Button (including dynamically added pets)
+    function attachDeleteEvent() {
+        document.querySelectorAll(".delete-pet-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let petId = this.getAttribute("data-pet-id");
+                if (confirm("Are you sure you want to delete this pet?")) {
+                    fetch(`/delete_pet/${petId}/`, {
+                        method: "POST",
+                        headers: { "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById(`pet-${petId}`).remove();
+
+                            // ✅ Show "No Pets" message if all pets are deleted
+                            if (document.querySelectorAll(".pet-card").length === 0) {
+                                petGrid.innerHTML = `<p class="text-center text-muted" id="noPetsMessage">You haven't listed any pets yet. Add one now! 🐾</p>`;
+                            }
+                        } else {
+                            alert("Error deleting pet.");
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+                }
+            });
+        });
+    }
+
+    // ✅ Initial setup: Attach delete events to existing pets
+    attachDeleteEvent();
+});
+
+
+        // ✅ Express Interest Button
         document.querySelectorAll(".express-interest-btn").forEach(button => {
             button.addEventListener("click", function () {
                 const petId = this.dataset.petId;

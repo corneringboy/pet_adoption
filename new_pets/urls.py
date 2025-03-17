@@ -55,6 +55,8 @@ urlpatterns = [
     path('csrf/', get_csrf_token, name='csrf_token'),  # ✅ New URL for fetching CSRF token
      path("contact/", contact, name="contact"),
     path("contact/submit/", contact_submit, name="contact_submit"),  # ✅ Ensure this exists  
+    
+     path("add-pet/", add_pet, name="add_pet"),
 ]
 
 # 📂 Serve Media Files in Development Mode
