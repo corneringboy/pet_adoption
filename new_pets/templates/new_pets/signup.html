@@ -156,7 +156,10 @@
         const roleSelect = document.getElementById("role-select");
         const sellerFields = document.getElementById("sellerFields");
         const loginLink = document.getElementById("login-link");
-
+        const form = document.querySelector("form");
+        const password1 = document.querySelector("input[name='password1']");
+        const password2 = document.querySelector("input[name='password2']");
+        const phoneInput = document.querySelector("input[name='phone']");
         function toggleFields() {
             if (roleSelect.value === "seller") {
                 sellerFields.style.display = "block";
@@ -169,6 +172,26 @@
 
         roleSelect.addEventListener("change", toggleFields);
         toggleFields();
+
+        form.addEventListener("submit", function(event) {
+            let errors = [];
+
+            // Password Mismatch Check
+            if (password1.value !== password2.value) {
+                errors.push("Passwords do not match!");
+            }
+
+            // Phone Number Validation (Only Numbers Allowed)
+            if (!/^\d+$/.test(phoneInput.value)) {
+                errors.push("Phone number should contain only numbers!");
+            }
+
+            // Show errors if any
+            if (errors.length > 0) {
+                event.preventDefault();
+                alert(errors.join("\n"));
+            }
+        });
     });
 </script>
 

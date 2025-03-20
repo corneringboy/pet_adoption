@@ -78,7 +78,7 @@ class SellerProfile(models.Model):
 class Pet(models.Model):
     animal = models.CharField(max_length=50)  # ✅ Changed from "name" to "animal"
     breed = models.CharField(max_length=100)
-    age = models.DecimalField(max_digits=4, decimal_places=1)  # ✅ Allows decimal ages
+    age = models.DecimalField(max_digits=4, decimal_places=2)  # ✅ Allows decimal ages
     image = models.ImageField(upload_to='pet_images/', null=True, blank=True)  # ✅ Allows optional image
     description = models.TextField()
     adoption_status = models.CharField(
@@ -86,6 +86,17 @@ class Pet(models.Model):
     )
     seller = models.ForeignKey(SellerProfile, on_delete=models.CASCADE, null=True, blank=True, related_name="pets")  # ✅ Links to SellerProfile
     interested_buyers = models.ManyToManyField(CustomUser, blank=True, related_name="interested_pets")  # ✅ Track interested buyers
+    
+    def clean(self):
+        """Ensure that months are between 0-11 and handle rounding."""
+        years = int(self.age)  # Extract years (1 in 1.11)
+        months = int((self.age * 100) % 100)  # Extract months (11 in 1.11)
+
+        if months >= 12:  # ✅ If months reach 12, increment year
+            years += 1
+            months = 0
+
+        self.age = float(f"{years}.{months}")  # ✅ Save as Year.Month format
 
     def get_store_location(self):
         """ ✅ Returns the store location of the seller """
@@ -106,3 +117,4 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.inquiry_type}"
+    

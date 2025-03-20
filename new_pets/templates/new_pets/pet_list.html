@@ -187,10 +187,10 @@
                 {% if pet.adoption_status == "Available" %}✔ Available{% else %}❌ Adopted{% endif %}
             </span>
 
-            <img src="{{ pet.image.url }}" class="pet-image" alt="{{ pet.name }}">
+            <img src="{{ pet.image.url }}" class="pet-image" alt="{{ pet.animal }}">
 
             <div class="pet-details">
-                <h3>{{ pet.name }}</h3>
+                <h3>{{ pet.animal }}</h3>
                 <p><strong>Breed:</strong> {{ pet.breed }}</p>
                 <p><strong>Age:</strong> {{ pet.age }} years</p>
                 <p><strong>Personality:</strong> {{ pet.description }}</p>
@@ -223,6 +223,21 @@
 
 <!-- 🛠️ JavaScript -->
 <script>
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+        let searchValue = this.value.toLowerCase();
+        let petBoxes = document.querySelectorAll(".pet-box");
+
+        petBoxes.forEach(pet => {
+            let petName = pet.getAttribute("data-name");
+            let petBreed = pet.getAttribute("data-breed");
+
+            if (petName.includes(searchValue) || petBreed.includes(searchValue)) {
+                pet.style.display = "flex";
+            } else {
+                pet.style.display = "none";
+            }
+        });
+    });
     function getCSRFToken() {
         return document.querySelector('[name=csrfmiddlewaretoken]').value;
     }
